@@ -261,13 +261,11 @@ Website được xây dựng bằng HTML, CSS và JavaScript nhằm giám sát, 
 
 **Kết quả:** Website giám sát chính xác dữ liệu mực nước và nhiệt độ bể nuôi theo thời gian thực, hiển thị trực quan trạng thái cảnh báo và điều khiển từ xa Máy bơm, Van thoát ổn định
 
-[Giao diện Website Dashboard - Phần điều khiển]
 
 
 <p align="center">
  <img width="980" height="531" alt="image" src="https://github.com/user-attachments/assets/f3ce6919-2c3c-40be-86eb-45c610f837f9" />
 
-[Giao diện Website Dashboard - Mặt cắt bể nuôi]
 
 
 <p align="center">
@@ -288,13 +286,11 @@ Website được xây dựng bằng HTML, CSS và JavaScript nhằm giám sát, 
 ## 7. Kết quả đạt được sau khi mô phỏng
 
 ### TH1: Mực nước 1m - 1.5m bật 50% công suất máy bơm, trong 10s
-[TH1 - Mô phỏng Wokwi]
 
 
 <p align="center">
  <img width="980" height="427" alt="image" src="https://github.com/user-attachments/assets/3ac48c9e-3c51-4cac-b09f-7ffd3f15b181" />
 
-[TH1 - Giao diện Website]
 
 
 <p align="center">
@@ -302,13 +298,10 @@ Website được xây dựng bằng HTML, CSS và JavaScript nhằm giám sát, 
 
 
 ### TH2: Mực nước 1.5m - 2m bật 100% công suất máy bơm, trong 20s
-[TH2 - Mô phỏng Wokwi]
 
 
 <p align="center">
  <img width="980" height="503" alt="image" src="https://github.com/user-attachments/assets/9cbe6b9c-577b-41d8-8ce7-f1cd0620650f" />
-
-[TH2 - Giao diện Website]
 
 
 <p align="center">
@@ -316,13 +309,11 @@ Website được xây dựng bằng HTML, CSS và JavaScript nhằm giám sát, 
 
 
 ### TH3: Mực nước < 0.5m bật Van thoát, trong 10s
-[TH3 - Mô phỏng Wokwi]
 
 
 <p align="center">
  <img width="980" height="502" alt="image" src="https://github.com/user-attachments/assets/1bd8f161-509c-41ac-bf8a-37048e53a6ae" />
 
-[TH3 - Giao diện Website]
 
 
 <p align="center">
@@ -330,13 +321,11 @@ Website được xây dựng bằng HTML, CSS và JavaScript nhằm giám sát, 
 
 
 ### TH4: Khi chuyển sang chế độ thủ công, yêu cầu đóng máy bơm với mức nước 1.5m - 2m và mở van thoát (chấp hành ngược lại với chế độ Tự động ở TH2)
-[TH4 - Giao diện Website]
 
 
 <p align="center">
  <img width="980" height="531" alt="image" src="https://github.com/user-attachments/assets/5f39c558-6391-40f9-938c-09bf45ad4162" />
 
-[TH4 - Mô phỏng Wokwi]
 
 
 <p align="center">
