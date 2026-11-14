@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AQUASMART UTC - Hệ Thống Quản Lý Bể Thủy Hải Sản (Đề 4 ESP32)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <!-- Thư viện MQTT.js chính thức qua CDN -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Hiệu ứng quay cánh quạt máy bơm */
+    @keyframes spin-impeller {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin-50 {
+      animation: spin-impeller 1.4s linear infinite;
+    }
+    .spin-100 {
+      animation: spin-impeller 0.42s linear infinite;
+    }
+
+    /* Hiệu ứng sóng nước bề mặt bể hải sản */
+    @keyframes wave-slide {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(-25%); }
+      100% { transform: translateX(-50%); }
+    }
+    .aquarium-wave {
+      animation: wave-slide 6s ease-in-out infinite alternate;
+    }
+
+    /* Hiệu ứng cá bơi ngang trong bể */
+    @keyframes swim-right {
+      0% { left: -10%; transform: translateY(0px) scaleX(1); }
+      25% { transform: translateY(-6px) scaleX(1); }
+      48% { left: 86%; transform: translateY(4px) scaleX(1); }
+      50% { left: 86%; transform: translateY(4px) scaleX(-1); }
+      75% { transform: translateY(-5px) scaleX(-1); }
+      98% { left: -10%; transform: translateY(0px) scaleX(-1); }
+      100% { left: -10%; transform: translateY(0px) scaleX(1); }
+    }
+    @keyframes swim-left {
+      0% { left: 84%; transform: translateY(0px) scaleX(-1); }
+      25% { transform: translateY(6px) scaleX(-1); }
+      48% { left: -8%; transform: translateY(-4px) scaleX(-1); }
+      50% { left: -8%; transform: translateY(-4px) scaleX(1); }
+      75% { transform: translateY(5px) scaleX(1); }
+      98% { left: 84%; transform: translateY(0px) scaleX(1); }
+      100% { left: 84%; transform: translateY(0px) scaleX(-1); }
+    }
+    .fish-swim-1 {
+      position: absolute;
+      animation: swim-right 14s ease-in-out infinite;
+    }
+    .fish-swim-2 {
+      position: absolute;
+      animation: swim-left 18s ease-in-out infinite;
+    }
+    .fish-swim-3 {
+      position: absolute;
+      animation: swim-right 21s ease-in-out infinite 2.5s;
+    }
+
+    /* Hiệu ứng cua/tôm bò nhẹ dưới đáy bể */
+    @keyframes bottom-crawl {
+      0%, 100% { transform: translateX(0px); }
+      50% { transform: translateX(16px); }
+    }
+    .crustacean-crawl {
+      animation: bottom-crawl 5s ease-in-out infinite;
+    }
+
+    /* Hiệu ứng bọt khí Oxy sủi từ đáy bể lên */
+    @keyframes bubble-rise {
+      0% { bottom: 8px; opacity: 0; transform: scale(0.6) translateX(0); }
+      20% { opacity: 0.85; }
+      50% { transform: scale(1) translateX(-6px); }
+      80% { opacity: 0.7; }
+      100% { bottom: 92%; opacity: 0; transform: scale(1.25) translateX(6px); }
+    }
+    .bubble {
+      position: absolute;
+      border-radius: 9999px;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(186, 230, 253, 0.4));
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      pointer-events: none;
+    }
+    .b-1 { left: 16%; width: 9px; height: 9px; animation: bubble-rise 3.2s infinite ease-in 0.2s; }
+    .b-2 { left: 24%; width: 6px; height: 6px; animation: bubble-rise 2.6s infinite ease-in 1.1s; }
+    .b-3 { left: 48%; width: 10px; height: 10px; animation: bubble-rise 3.8s infinite ease-in 0.5s; }
+    .b-4 { left: 55%; width: 7px; height: 7px; animation: bubble-rise 2.9s infinite ease-in 1.7s; }
+    .b-5 { left: 76%; width: 9px; height: 9px; animation: bubble-rise 3.4s infinite ease-in 0.8s; }
+    .b-6 { left: 84%; width: 6px; height: 6px; animation: bubble-rise 2.4s infinite ease-in 1.4s; }
+
+    /* Hiệu ứng rong biển đung đưa */
+    @keyframes sway {
+      0%, 100% { transform: rotate(-4deg); }
+      50% { transform: rotate(5deg); }
+    }
+    .seaweed-sway {
+      transform-origin: bottom center;
+      animation: sway 3.5s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-sky-50 via-cyan-50/70 to-slate-100 text-slate-800 font-sans min-h-screen pb-10">
+
+  <!-- Hộp thông báo nổi (Toast Notification) -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- ================= HEADER: THANH ĐIỀU HƯỚNG ĐẠI DƯƠNG ================= -->
+  <header class="bg-gradient-to-r from-sky-900 via-cyan-900 to-teal-900 text-white shadow-lg sticky top-0 z-30 border-b border-cyan-700/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      
+      <!-- Logo & Tên hệ thống -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-sky-500 flex items-center justify-center shadow-md shadow-cyan-950/50 border border-white/25 shrink-0 text-2xl">
+          🦞
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wider bg-cyan-400/20 text-cyan-200 border border-cyan-300/30">
+              AQUASMART UTC • ĐỀ 4 ESP32
+            </span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-sky-100">
+              SV: Vũ Hùng Trường - 231402381
+            </span>
+          </div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white mt-0.5">
+            Hệ Thống Quản Lý & Điều Khiển Bể Thủy Hải Sản Thông Minh
+          </h1>
+        </div>
+      </div>
+
+      <!-- Cụm trạng thái kết nối MQTT & Nguồn dữ liệu -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <div id="dataSourceBtn"
+          class="px-3.5 py-2 rounded-xl bg-amber-400/20 text-amber-200 border border-amber-300/40 text-xs font-bold flex items-center gap-2">
+          <span id="dataSourceIcon">📡</span>
+          <span id="dataSourceText">Nguồn: Nhận trực tiếp Wokwi</span>
+        </div>
+
+        <!-- Trạng thái MQTT Broker -->
+        <div class="flex items-center gap-2.5 bg-slate-900/50 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-cyan-500/30">
+          <span id="mqttDot" class="w-3 h-3 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+          <div class="text-xs">
+            <div id="mqttStatusText" class="font-bold text-white leading-tight">Đang kết nối MQTT...</div>
+            <div id="lastUpdateBadge" class="text-[11px] text-cyan-200/80 font-mono">Sẵn sàng đồng bộ</div>
+          </div>
+        </div>
+
+        <!-- Nút Kết nối lại -->
+        <button onclick="reconnectMQTT()" class="px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 text-white text-xs font-bold transition flex items-center gap-1.5 border border-white/20 cursor-pointer">
+          <span>🔄</span>
+          <span>Kết nối lại</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HÀNG 1: 4 THẺ CHỈ SỐ TỔNG QUAN -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Thẻ 1: Mực Nước Bể Hải Sản -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-sky-100 flex flex-col justify-between">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-sky-800 bg-sky-100 px-2.5 py-1 rounded-lg">
+              🌊 Mực Nước Bể Nuôi
+            </span>
+            <div class="flex items-baseline gap-1.5 mt-3">
+              <span id="waterLevelValue" class="text-4xl font-extrabold font-mono text-slate-900">1.27</span>
+              <span class="text-lg font-bold text-slate-500">m</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl border border-sky-200 shrink-0">
+            📏
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-semibold text-slate-500">Ngưỡng hiện tại:</span>
+            <span id="waterZoneBadge" class="font-extrabold px-2 py-0.5 rounded-md bg-sky-100 text-sky-800">
+              Ngưỡng 3 (1.0m - 1.5m)
+            </span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+            <div id="waterCardBar" class="h-full bg-sky-500 transition-all duration-500 rounded-full" style="width: 63.5%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thẻ 2: Nhiệt Độ Nước Bể -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-amber-100 flex flex-col justify-between">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-amber-900 bg-amber-100 px-2.5 py-1 rounded-lg">
+              🌡️ Nhiệt Độ Nước Bể
+            </span>
+            <div class="flex items-baseline gap-1.5 mt-3">
+              <span id="tempValue" class="text-4xl font-extrabold font-mono text-slate-900">22.0</span>
+              <span class="text-lg font-bold text-slate-500">°C</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl border border-amber-200 shrink-0">
+            🐟
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-semibold text-slate-500">Đánh giá môi trường:</span>
+            <span id="tempHealthBadge" class="font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+              Lý tưởng (18°C - 28°C)
+            </span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+            <div id="tempBar" class="h-full bg-gradient-to-r from-sky-400 via-emerald-400 to-rose-500 transition-all duration-500 rounded-full" style="width: 44%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thẻ 3: Trạng Thái Máy Bơm -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-emerald-100 flex flex-col justify-between">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 bg-emerald-100 px-2.5 py-1 rounded-lg">
+              ⚙️ Máy Bơm (GPIO 25 & 26)
+            </span>
+            <div class="flex items-center gap-2 mt-3">
+              <span id="pumpStateValue" class="text-3xl font-extrabold font-mono text-sky-600">50%</span>
+              <span id="pumpStatusSubtext" class="text-xs font-bold px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200">
+                Đang chạy PWM
+              </span>
+            </div>
+          </div>
+          <div id="pumpIconBox" class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 border border-sky-200">
+            <svg id="pumpFanSvg" class="w-7 h-7 spin-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c0-3 2.5-5.5 5.5-5.5S23 9 23 12H12zm0 0c3 0 5.5 2.5 5.5 5.5S15 23 12 23V12zm0 0c0 3-2.5 5.5-5.5 5.5S1 15 1 12h11zm0 0c-3 0-5.5-2.5-5.5-5.5S9 1 12 1v11z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100">
+          <div class="flex justify-between text-xs mb-1.5">
+            <span class="font-semibold text-slate-500">Xung PWM LED 1:</span>
+            <span id="pumpPwmLabel" class="font-mono font-bold text-slate-700">50% (Duty 127)</span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+            <div id="pumpBar" class="h-full bg-emerald-500 transition-all duration-300 rounded-full" style="width: 50%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thẻ 4: Trạng Thái Van Thoát -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm border-2 border-purple-100 flex flex-col justify-between">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-purple-900 bg-purple-100 px-2.5 py-1 rounded-lg">
+              🚰 Van Thoát (GPIO 27 & 14)
+            </span>
+            <div class="flex items-center gap-2.5 mt-3">
+              <span id="valveStateValue" class="text-3xl font-extrabold font-mono text-slate-400">ĐÓNG</span>
+              <span id="valveLedIndicator" class="w-3.5 h-3.5 rounded-full bg-slate-300 border border-slate-400" title="Đèn LED 2 báo Van mở"></span>
+            </div>
+          </div>
+          <div id="valveIconBox" class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center text-2xl shrink-0 border border-slate-200">
+            🔒
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+          <span class="font-semibold text-slate-500">Cửa xả đáy bể:</span>
+          <span id="valveSubBadge" class="px-2.5 py-1 rounded-md font-extrabold bg-slate-100 text-slate-600">
+            Giữ nước trong bể
+          </span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- HÀNG 2: CHUYỂN ĐỔI CHẾ ĐỘ LOGIC (TỰ ĐỘNG ⇄ THỦ CÔNG) & ĐIỀU KHIỂN THỦ CÔNG BƠM / VAN -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      
+      <!-- CỘT TRÁI (5 CỘT): THẺ CHẾ ĐỘ HOẠT ĐỘNG & NÚT CHUYỂN ĐỔI 2 CHIỀU LOGIC -->
+      <div id="modeCardContainer" class="lg:col-span-5 bg-white rounded-3xl p-6 shadow-sm border-2 border-sky-200 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-sky-700 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
+              🔄 Chế Độ Vận Hành Hệ Thống
+            </span>
+            <span id="modeSmallTag" class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+              Chế độ Tự động
+            </span>
+          </div>
+
+          <!-- Hiển thị trạng thái chế độ hiện tại thật to, rõ ràng -->
+          <div id="currentModeBanner" class="mt-4 p-4 rounded-2xl bg-gradient-to-r from-sky-50 to-emerald-50 border-2 border-sky-200 flex items-center gap-3.5">
+            <div id="currentModeIcon" class="w-14 h-14 rounded-2xl bg-sky-600 text-white flex items-center justify-center text-3xl shrink-0 shadow-sm">
+              🤖
+            </div>
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Trạng thái hiện tại:</div>
+              <div id="currentModeTitle" class="text-xl font-extrabold text-sky-950 mt-0.5">
+                ĐANG Ở CHẾ ĐỘ: TỰ ĐỘNG
+              </div>
+              <p id="currentModeDesc" class="text-xs text-slate-600 mt-1 leading-relaxed">
+                Hệ thống tự động kiểm tra <strong>4 ngưỡng mực nước</strong> để đóng/mở Máy bơm (10s/20s) và Van thoát (10s).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- NÚT BẤM CHUYỂN ĐỔI LOGIC HAI CHIỀU -->
+        <div class="mt-5 pt-4 border-t border-slate-100">
+          <div class="text-xs font-semibold text-slate-500 mb-2 flex items-center justify-between">
+            <span>Nhấn nút bên dưới để đổi chế độ:</span>
+            <span id="modeTargetHint" class="font-bold text-amber-700">Chuyển sang điều khiển tay</span>
+          </div>
+
+          <button id="toggleModeBtn" onclick="handleModeToggleClick()"
+            class="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-base shadow-md shadow-amber-500/20 active:scale-[0.99] transition flex items-center justify-center gap-2.5 cursor-pointer">
+            <span id="toggleModeBtnIcon" class="text-xl">🛠️</span>
+            <span id="toggleModeBtnText">Chuyển sang Chế Độ Thủ Công</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CỘT PHẢI (7 CỘT): BẢNG ĐIỀU KHIỂN THỦ CÔNG MÁY BƠM (50% / 100% / ĐÓNG) & VAN THOÁT -->
+      <div class="lg:col-span-7 bg-white rounded-3xl p-6 shadow-sm border-2 border-sky-100 flex flex-col justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <span>🎛️</span>
+              <span>Bảng Điều Khiển Thủ Công Máy Bơm & Van Thoát</span>
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Điều khiển trực tiếp cơ cấu chấp hành (Gửi lệnh MQTT tới <code class="font-mono font-bold text-sky-700">utc/iot_lab/de4/control</code>)
+            </p>
+          </div>
+          <span id="manualPanelStatusBadge" class="self-start sm:self-auto text-xs font-extrabold px-3 py-1 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+            Bấm nút bất kỳ để điều khiển ngay
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4">
+          
+          <!-- Cụm 1 (7 cột): Điều Khiển Máy Bơm Thủ Công (50% / 100% / ĐÓNG) -->
+          <div class="md:col-span-7 p-4 rounded-2xl bg-emerald-50/70 border-2 border-emerald-200 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="text-sm font-extrabold text-emerald-950 flex items-center gap-1.5">
+                  <span>⚙️</span>
+                  <span>Máy Bơm Nước (Relay 1)</span>
+                </h3>
+                <p class="text-[11px] text-emerald-700 font-medium">GPIO 25 (Nguồn) & GPIO 26 (PWM 50% / 100%)</p>
+              </div>
+              <span id="ctrlPumpBadge" class="text-xs font-mono font-extrabold px-2.5 py-1 rounded-lg bg-white text-emerald-800 border border-emerald-300 shadow-2xs">
+                50%
+              </span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <button id="btnPump50" onclick="sendControlCommand('PUMP_50', 'Bật Máy bơm 50% công suất (Chế độ Thủ công)')"
+                class="py-3.5 px-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-extrabold text-xs shadow-sm active:scale-95 transition flex flex-col items-center justify-center gap-1 cursor-pointer">
+                <span class="text-sm">🌓 BẬT 50%</span>
+                <span class="text-[11px] font-medium opacity-95">Công suất 50%</span>
+              </button>
+
+              <button id="btnPump100" onclick="sendControlCommand('PUMP_ON', 'Bật Máy bơm 100% công suất (Chế độ Thủ công)')"
+                class="py-3.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-sm active:scale-95 transition flex flex-col items-center justify-center gap-1 cursor-pointer">
+                <span class="text-sm">⚡ BẬT 100%</span>
+                <span class="text-[11px] font-medium opacity-95">Công suất 100%</span>
+              </button>
+
+              <button id="btnPumpOff" onclick="sendControlCommand('PUMP_OFF', 'Đóng Máy bơm (Chế độ Thủ công)')"
+                class="py-3.5 px-2 rounded-xl bg-white hover:bg-rose-50 text-slate-800 hover:text-rose-700 border-2 border-slate-200 hover:border-rose-300 font-extrabold text-xs active:scale-95 transition flex flex-col items-center justify-center gap-1 cursor-pointer">
+                <span class="text-sm">⛔ ĐÓNG BƠM</span>
+                <span class="text-[11px] font-medium text-slate-500">Tắt nguồn (0%)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Cụm 2 (5 cột): Điều Khiển Van Thoát Thủ Công -->
+          <div class="md:col-span-5 p-4 rounded-2xl bg-purple-50/70 border-2 border-purple-200 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="text-sm font-extrabold text-purple-950 flex items-center gap-1.5">
+                  <span>🚰</span>
+                  <span>Van Thoát Đáy (Relay 2)</span>
+                </h3>
+                <p class="text-[11px] text-purple-700 font-medium">GPIO 27 (Van) & GPIO 14 (Đèn báo)</p>
+              </div>
+              <span id="ctrlValveBadge" class="text-xs font-mono font-extrabold px-2.5 py-1 rounded-lg bg-white text-purple-800 border border-purple-300 shadow-2xs">
+                ĐÓNG
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button id="btnValveOn" onclick="sendControlCommand('VALVE_ON', 'Mở Van thoát đáy (Chế độ Thủ công)')"
+                class="py-3.5 px-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-sm active:scale-95 transition flex flex-col items-center justify-center gap-1 cursor-pointer">
+                <span class="text-sm">🌊 MỞ VAN</span>
+                <span class="text-[11px] font-medium opacity-95">Xả đáy bể</span>
+              </button>
+
+              <button id="btnValveOff" onclick="sendControlCommand('VALVE_OFF', 'Đóng Van thoát đáy (Chế độ Thủ công)')"
+                class="py-3.5 px-2.5 rounded-xl bg-white hover:bg-rose-50 text-slate-800 hover:text-rose-700 border-2 border-slate-200 hover:border-rose-300 font-extrabold text-xs active:scale-95 transition flex flex-col items-center justify-center gap-1 cursor-pointer">
+                <span class="text-sm">🔒 ĐÓNG VAN</span>
+                <span class="text-[11px] font-medium text-slate-500">Đóng kín van</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- HÀNG 3: MẶT CẮT BỂ THỦY HẢI SẢN 2D -->
+    <section class="bg-white rounded-3xl p-6 shadow-sm border-2 border-sky-100 flex flex-col justify-between">
+      
+      <div>
+        <!-- Tiêu đề khu vực bể -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <span>🐠</span>
+              <span>Mặt Cắt Bể Nuôi Thủy Hải Sản Trung Tâm</span>
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Hiển thị trực quan 4 vùng ngưỡng mực nước, đàn cá tôm bơi lội, sủi khí Oxy, Máy bơm và Van xả đáy
+            </p>
+          </div>
+          <div class="flex items-center gap-2 self-start sm:self-auto">
+            <span class="text-xs font-bold text-slate-500">Độ sâu nước:</span>
+            <span id="tankHeightLabel" class="font-mono text-base font-extrabold px-3.5 py-1 rounded-xl bg-sky-600 text-white shadow-xs">
+              1.27 m
+            </span>
+          </div>
+        </div>
+
+        <!-- Thanh Cảnh Báo Động Theo Quy Luật Đề 4 -->
+        <div id="aquariumAlertBanner" class="mt-4 p-4 rounded-2xl bg-sky-50 border-2 border-sky-200 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span id="alertBannerIcon" class="text-2xl">⚠️</span>
+            <div>
+              <div id="alertBannerTitle" class="text-sm font-extrabold text-sky-950">
+                Ngưỡng 3 (1.0m – 1.5m): Bật Máy bơm 50% công suất trong 10s
+              </div>
+              <div id="alertBannerDesc" class="text-xs text-sky-800 mt-0.5 font-medium">
+                Relay 1 đóng • LED 1 PWM sáng 50% • Van thoát ĐÓNG để điều tiết mực nước bể hải sản.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HÌNH VẼ BỂ THỦY HẢI SẢN + THƯỚC ĐO 4 NGƯỠNG -->
+        <div class="mt-5 grid grid-cols-12 gap-2 items-center">
+          
+          <!-- Thang đo chiều cao (2 cột) -->
+          <div class="col-span-2 h-80 flex flex-col justify-between text-right pr-2 font-mono text-xs font-extrabold select-none py-1">
+            <div class="text-rose-600 flex items-center justify-end gap-1">
+              <span>2.0m</span><span class="w-3 h-0.5 bg-rose-500"></span>
+            </div>
+            <div class="text-amber-600 flex items-center justify-end gap-1">
+              <span>1.5m</span><span class="w-3 h-0.5 bg-amber-500"></span>
+            </div>
+            <div class="text-sky-600 flex items-center justify-end gap-1">
+              <span>1.0m</span><span class="w-3 h-0.5 bg-sky-500"></span>
+            </div>
+            <div class="text-emerald-600 flex items-center justify-end gap-1">
+              <span>0.5m</span><span class="w-3 h-0.5 bg-emerald-500"></span>
+            </div>
+            <div class="text-slate-500 flex items-center justify-end gap-1">
+              <span>0.0m</span><span class="w-3 h-0.5 bg-slate-400"></span>
+            </div>
+          </div>
+
+          <!-- Lòng Bể Kính Nuôi Thủy Hải Sản (10 cột) -->
+          <div class="col-span-10 h-80 relative rounded-b-3xl rounded-t-xl border-4 border-sky-900 bg-gradient-to-b from-sky-100/70 via-sky-50/40 to-amber-50/30 overflow-hidden shadow-inner">
+            
+            <!-- Vạch chia 4 vùng ngưỡng trực tiếp trên thành bể -->
+            <div class="absolute inset-x-0 bottom-[75%] border-t-2 border-dashed border-rose-500/80 z-20 pointer-events-none">
+              <span class="absolute right-2.5 -top-5 text-[11px] font-extrabold px-2 py-0.5 rounded bg-rose-100 text-rose-900 border border-rose-300">
+                Ngưỡng 4 (1.5m - 2.0m): Bơm 100% trong 20s
+              </span>
+            </div>
+
+            <div class="absolute inset-x-0 bottom-[50%] border-t-2 border-dashed border-sky-600/80 z-20 pointer-events-none">
+              <span class="absolute right-2.5 -top-5 text-[11px] font-extrabold px-2 py-0.5 rounded bg-sky-100 text-sky-950 border border-sky-300">
+                Ngưỡng 3 (1.0m - 1.5m): Bơm 50% trong 10s
+              </span>
+            </div>
+
+            <div class="absolute inset-x-0 bottom-[25%] border-t-2 border-dashed border-emerald-600/80 z-20 pointer-events-none">
+              <span class="absolute right-2.5 -top-5 text-[11px] font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-950 border border-emerald-300">
+                Ngưỡng 2 (0.5m - 1.0m): An toàn (Bơm & Van ĐÓNG)
+              </span>
+            </div>
+
+            <div class="absolute left-3 bottom-9 z-20 pointer-events-none">
+              <span class="text-[11px] font-extrabold px-2 py-0.5 rounded bg-amber-100 text-amber-950 border border-amber-300">
+                Ngưỡng 1 (&lt; 0.5m): Mở Van thoát 10s
+              </span>
+            </div>
+
+            <!-- KHỐI NƯỚC BIỂN DÂNG LÊN / HẠ XUỐNG -->
+            <div id="waterFillContainer" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-cyan-600/85 via-sky-500/75 to-cyan-300/70 transition-all duration-500 ease-out overflow-hidden" style="height: 63.5%;">
+              
+              <!-- Lớp sóng nước trên bề mặt -->
+              <div class="absolute -top-2.5 left-0 w-[200%] h-5 bg-white/35 rounded-[100%] aquarium-wave"></div>
+
+              <!-- Bọt khí Oxy sủi lên -->
+              <div class="absolute inset-0">
+                <div class="bubble b-1"></div>
+                <div class="bubble b-2"></div>
+                <div class="bubble b-3"></div>
+                <div class="bubble b-4"></div>
+                <div class="bubble b-5"></div>
+                <div class="bubble b-6"></div>
+              </div>
+
+              <!-- Đàn cá biển & mực bơi lội -->
+              <div class="fish-swim-1 top-[22%] text-2xl select-none drop-shadow-sm">🐠</div>
+              <div class="fish-swim-2 top-[50%] text-2xl select-none drop-shadow-sm">🐟</div>
+              <div class="fish-swim-3 top-[68%] text-xl select-none drop-shadow-sm">🦑</div>
+            </div>
+
+            <!-- ĐÁY BỂ CÁT BIỂN, RONG BIỂN & TÔM HÙM / CUA BIỂN -->
+            <div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-amber-300/90 to-amber-200/80 border-t border-amber-400/60 z-10 flex items-center justify-around px-6 select-none">
+              <span class="text-xl seaweed-sway -mt-5">🌿</span>
+              <span class="text-lg crustacean-crawl -mt-2" title="Tôm hùm">🦞</span>
+              <span class="text-lg -mt-1">🐚</span>
+              <span class="text-xl seaweed-sway -mt-5">🌿</span>
+              <span class="text-lg crustacean-crawl -mt-2" title="Cua biển">🦀</span>
+              <span class="text-base -mt-1">⭐</span>
+              <span class="text-xl seaweed-sway -mt-5">🌿</span>
+            </div>
+
+            <!-- Nhãn nổi chính giữa bể -->
+            <div class="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+              <div class="bg-slate-900/80 backdrop-blur-xs text-white px-5 py-2.5 rounded-2xl border border-white/25 shadow-lg text-center">
+                <div class="text-[11px] uppercase tracking-wider text-cyan-200 font-bold">Mực nước thực tế</div>
+                <div id="tankCenterText" class="text-2xl sm:text-3xl font-extrabold font-mono">1.27 m</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- SƠ ĐỒ ĐƯỜNG ỐNG MÁY BƠM & VAN XẢ ĐÁY DƯỚI BỂ -->
+      <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Đường ống Máy Bơm -->
+        <div id="pipePumpBox" class="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold shadow-xs">
+              ⚙️
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-700">Đường ống Máy Bơm (Relay 1)</div>
+              <div id="pipePumpText" class="text-xs font-extrabold text-sky-800 mt-0.5">
+                Đang bơm tuần hoàn 50% công suất
+              </div>
+            </div>
+          </div>
+          <span id="pipePumpBadge" class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-sky-600 text-white">
+            50% PWM
+          </span>
+        </div>
+
+        <!-- Đường ống Van Thoát Đáy -->
+        <div id="pipeValveBox" class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-slate-500 text-white flex items-center justify-center font-bold shadow-xs">
+              🚰
+            </div>
+            <div>
+              <div class="text-xs font-bold text-slate-700">Đường ống Van Xả Đáy (Relay 2)</div>
+              <div id="pipeValveText" class="text-xs font-extrabold text-slate-500 mt-0.5">
+                Cửa van đang ĐÓNG kín
+              </div>
+            </div>
+          </div>
+          <span id="pipeValveBadge" class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-200 text-slate-700">
+            ĐÓNG
+          </span>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // ================= 1. CẤU HÌNH MQTT KHỚP 100% VỚI CODE ESP32 WOKWI =================
+    const MQTT_BROKER_URL = "wss://broker.emqx.io:8084/mqtt";
+    const TOPIC_TELEMETRY = "utc/iot_lab/de4/telemetry";
+    const TOPIC_CONTROL   = "utc/iot_lab/de4/control";
+
+    let mqttClient = null;
+
+    // Khi người dùng bấm điều khiển Thủ công trên Web, khóa giữ trạng thái Thủ công trên Web
+    // để gói tin MQTT cũ từ Wokwi không làm nhảy mức bơm 50% lên 100%
+    let manualWebLock = false;
+    let autoSwitchHoldUntil = 0;
+
+    // Trạng thái hệ thống hiện tại
+    let uiState = {
+      waterLevel: 1.27,
+      temperature: 22.0,
+      pump: "50%",
+      valve: "ĐÓNG",
+      mode: "TỰ ĐỘNG"
+    };
+
+    // ================= 2. HÀM HIỂN THỊ THÔNG BÁO NỔI TIẾNG VIỆT (TOAST) =================
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+
+      let styleClasses = "bg-white border-sky-500 text-slate-800";
+      let icon = "ℹ️";
+      if (type === "success") { styleClasses = "bg-white border-emerald-500 text-slate-800"; icon = "✅"; }
+      if (type === "warning") { styleClasses = "bg-white border-amber-500 text-slate-800"; icon = "⚠️"; }
+      if (type === "error")   { styleClasses = "bg-white border-rose-500 text-slate-800"; icon = "❌"; }
+
+      toast.className = `pointer-events-auto border-l-4 ${styleClasses} border border-slate-200 px-4 py-3 rounded-2xl shadow-lg flex items-center justify-between gap-3 transition-all duration-300`;
+      toast.innerHTML = `
+        <div class="flex items-center gap-2 text-xs font-bold">
+          <span>${icon}</span>
+          <span>${message}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 text-xs font-bold">✕</button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        if (toast && toast.parentElement) toast.remove();
+      }, 3200);
+    }
+
+    // ================= 3. CẬP NHẬT GIAO DIỆN BỂ THỦY HẢI SẢN =================
+    function updateDashboardUI(data) {
+      // Mực nước và Nhiệt độ luôn nhận trực tiếp theo thời gian thực từ Wokwi
+      const waterLevel  = (data["Mực nước"] !== undefined) ? parseFloat(data["Mực nước"]) : uiState.waterLevel;
+      const temperature = (data["Nhiệt độ"] !== undefined) ? parseFloat(data["Nhiệt độ"]) : uiState.temperature;
+
+      let pumpState  = uiState.pump;
+      let valveState = uiState.valve;
+      let modeState  = uiState.mode;
+
+      // Chỉ nhận trạng thái Bơm/Van từ gói tin định kỳ khi KHÔNG bị khóa bởi thao tác Thủ công trên Web
+      const isHoldingAutoSwitch = Date.now() < autoSwitchHoldUntil;
+      if (!manualWebLock && !isHoldingAutoSwitch) {
+        if (data["Máy bơm"] !== undefined)   pumpState  = String(data["Máy bơm"]);
+        if (data["Van thoát"] !== undefined) valveState = String(data["Van thoát"]);
+        if (data["Chế độ"] !== undefined)    modeState  = String(data["Chế độ"]);
+      }
+
+      uiState = { waterLevel, temperature, pump: pumpState, valve: valveState, mode: modeState };
+
+      // 1. Cập nhật Mực nước & Bể thủy sản
+      document.getElementById("waterLevelValue").textContent = waterLevel.toFixed(2);
+      document.getElementById("tankHeightLabel").textContent = waterLevel.toFixed(2) + " m";
+      document.getElementById("tankCenterText").textContent  = waterLevel.toFixed(2) + " m";
+
+      const fillPercent = Math.max(6, Math.min(100, (waterLevel / 2.0) * 100));
+      document.getElementById("waterFillContainer").style.height = `${fillPercent}%`;
+      document.getElementById("waterCardBar").style.width = `${fillPercent}%`;
+
+      const waterZoneBadge = document.getElementById("waterZoneBadge");
+      const alertBanner    = document.getElementById("aquariumAlertBanner");
+      const alertIcon      = document.getElementById("alertBannerIcon");
+      const alertTitle     = document.getElementById("alertBannerTitle");
+      const alertDesc      = document.getElementById("alertBannerDesc");
+
+      if (waterLevel < 0.5) {
+        waterZoneBadge.className = "font-extrabold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800";
+        waterZoneBadge.textContent = "Ngưỡng 1 (< 0.5m)";
+        alertBanner.className = "mt-4 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 flex items-center justify-between gap-3";
+        alertIcon.textContent = "🚨";
+        alertTitle.className = "text-sm font-extrabold text-amber-950";
+        alertTitle.textContent = `Ngưỡng 1 (${waterLevel.toFixed(2)}m < 0.5m): Nước cạn ➔ Mở Van thoát trong 10s`;
+        alertDesc.className = "text-xs text-amber-800 mt-0.5 font-medium";
+        alertDesc.textContent = "Máy bơm ĐÓNG • Kích hoạt Relay 2 mở Van xả đáy (GPIO 27) và sáng đèn LED 2 (GPIO 14) trong 10 giây.";
+      } else if (waterLevel >= 0.5 && waterLevel < 1.0) {
+        waterZoneBadge.className = "font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800";
+        waterZoneBadge.textContent = "Ngưỡng 2 (0.5m - 1.0m)";
+        alertBanner.className = "mt-4 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-200 flex items-center justify-between gap-3";
+        alertIcon.textContent = "✅";
+        alertTitle.className = "text-sm font-extrabold text-emerald-950";
+        alertTitle.textContent = `Ngưỡng 2 (${waterLevel.toFixed(2)}m): Mực nước nuôi thủy hải sản an toàn`;
+        alertDesc.className = "text-xs text-emerald-800 mt-0.5 font-medium";
+        alertDesc.textContent = "Mực nước chuẩn 0.5m – 1.0m • Máy bơm ĐÓNG và Van thoát ĐÓNG.";
+      } else if (waterLevel >= 1.0 && waterLevel < 1.5) {
+        waterZoneBadge.className = "font-extrabold px-2 py-0.5 rounded-md bg-sky-100 text-sky-800";
+        waterZoneBadge.textContent = "Ngưỡng 3 (1.0m - 1.5m)";
+        alertBanner.className = "mt-4 p-4 rounded-2xl bg-sky-50 border-2 border-sky-200 flex items-center justify-between gap-3";
+        alertIcon.textContent = "⚠️";
+        alertTitle.className = "text-sm font-extrabold text-sky-950";
+        alertTitle.textContent = `Ngưỡng 3 (${waterLevel.toFixed(2)}m): Nước cao ➔ Bật Máy bơm 50% trong 10s`;
+        alertDesc.className = "text-xs text-sky-800 mt-0.5 font-medium";
+        alertDesc.textContent = "Relay 1 đóng • Băm xung PWM 50% ra LED 1 (GPIO 26) trong 10 giây • Van thoát ĐÓNG.";
+      } else {
+        waterZoneBadge.className = "font-extrabold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800";
+        waterZoneBadge.textContent = "Ngưỡng 4 (1.5m - 2.0m)";
+        alertBanner.className = "mt-4 p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 flex items-center justify-between gap-3";
+        alertIcon.textContent = "🚨";
+        alertTitle.className = "text-sm font-extrabold text-rose-950";
+        alertTitle.textContent = `Ngưỡng 4 (${waterLevel.toFixed(2)}m): Cảnh báo đầy bể ➔ Bật Máy bơm 100% trong 20s`;
+        alertDesc.className = "text-xs text-rose-800 mt-0.5 font-medium";
+        alertDesc.textContent = "Relay 1 đóng tối đa • LED 1 sáng 100% công suất suốt 20 giây để rút nhanh nước bể.";
+      }
+
+      // 2. Cập nhật Nhiệt độ nước
+      document.getElementById("tempValue").textContent = temperature.toFixed(1);
+      const tempPercent = Math.max(0, Math.min(100, (temperature / 50.0) * 100));
+      document.getElementById("tempBar").style.width = `${tempPercent}%`;
+
+      const tempHealthBadge = document.getElementById("tempHealthBadge");
+      if (temperature >= 18 && temperature <= 28) {
+        tempHealthBadge.className = "font-extrabold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800";
+        tempHealthBadge.textContent = "Lý tưởng (18°C - 28°C)";
+      } else if (temperature > 28) {
+        tempHealthBadge.className = "font-extrabold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800";
+        tempHealthBadge.textContent = "Nước ấm (> 28°C)";
+      } else {
+        tempHealthBadge.className = "font-extrabold px-2 py-0.5 rounded-md bg-sky-100 text-sky-800";
+        tempHealthBadge.textContent = "Nước lạnh (< 18°C)";
+      }
+
+      // 3. Cập nhật Máy bơm ("ĐÓNG", "50%", "100%")
+      const pumpStateEl   = document.getElementById("pumpStateValue");
+      const pumpSubtext   = document.getElementById("pumpStatusSubtext");
+      const pumpFanSvg    = document.getElementById("pumpFanSvg");
+      const pumpIconBox   = document.getElementById("pumpIconBox");
+      const pumpBar       = document.getElementById("pumpBar");
+      const pumpPwmLabel  = document.getElementById("pumpPwmLabel");
+      const pipePumpBox   = document.getElementById("pipePumpBox");
+      const pipePumpText  = document.getElementById("pipePumpText");
+      const pipePumpBadge = document.getElementById("pipePumpBadge");
+      const ctrlPumpBadge = document.getElementById("ctrlPumpBadge");
+
+      pumpStateEl.textContent = pumpState;
+      ctrlPumpBadge.textContent = pumpState;
+      pumpFanSvg.classList.remove("spin-50", "spin-100");
+
+      if (pumpState === "50%") {
+        pumpStateEl.className = "text-3xl font-extrabold font-mono text-sky-600";
+        pumpSubtext.className = "text-xs font-bold px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200";
+        pumpSubtext.textContent = (modeState === "THỦ CÔNG") ? "Chạy 50% (Thủ công)" : "Chạy 50% (10s)";
+        pumpIconBox.className = "w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0 border border-sky-200";
+        pumpFanSvg.classList.add("spin-50");
+        pumpBar.style.width = "50%";
+        pumpPwmLabel.textContent = "50% (Duty 127)";
+        pipePumpBox.className = "p-3.5 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-between";
+        pipePumpText.textContent = "Đang bơm tuần hoàn 50% công suất";
+        pipePumpBadge.className = "px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-sky-600 text-white";
+        pipePumpBadge.textContent = "50% PWM";
+      } else if (pumpState === "100%" || pumpState === "BẬT") {
+        pumpStateEl.className = "text-3xl font-extrabold font-mono text-emerald-600";
+        pumpSubtext.className = "text-xs font-bold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200";
+        pumpSubtext.textContent = (modeState === "THỦ CÔNG") ? "Chạy 100% (Thủ công)" : "Tối đa 100%";
+        pumpIconBox.className = "w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200";
+        pumpFanSvg.classList.add("spin-100");
+        pumpBar.style.width = "100%";
+        pumpPwmLabel.textContent = "100% (Duty 255)";
+        pipePumpBox.className = "p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 flex items-center justify-between";
+        pipePumpText.textContent = "Đang bơm hết công suất 100%";
+        pipePumpBadge.className = "px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-600 text-white";
+        pipePumpBadge.textContent = "100% PWM";
+      } else {
+        pumpStateEl.className = "text-3xl font-extrabold font-mono text-slate-400";
+        pumpSubtext.className = "text-xs font-bold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-500";
+        pumpSubtext.textContent = "Đang ĐÓNG";
+        pumpIconBox.className = "w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200";
+        pumpBar.style.width = "0%";
+        pumpPwmLabel.textContent = "0% (Đóng)";
+        pipePumpBox.className = "p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between";
+        pipePumpText.textContent = "Máy bơm đang ĐÓNG (Ngắt Relay 1)";
+        pipePumpBadge.className = "px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-200 text-slate-600";
+        pipePumpBadge.textContent = "ĐÓNG";
+      }
+
+      // 4. Cập nhật Van thoát đáy ("MỞ" hoặc "ĐÓNG")
+      const valveStateEl   = document.getElementById("valveStateValue");
+      const valveLed       = document.getElementById("valveLedIndicator");
+      const valveIconBox   = document.getElementById("valveIconBox");
+      const valveSubBadge  = document.getElementById("valveSubBadge");
+      const pipeValveBox   = document.getElementById("pipeValveBox");
+      const pipeValveText  = document.getElementById("pipeValveText");
+      const pipeValveBadge = document.getElementById("pipeValveBadge");
+      const ctrlValveBadge = document.getElementById("ctrlValveBadge");
+
+      valveStateEl.textContent = valveState;
+      ctrlValveBadge.textContent = valveState;
+
+      if (valveState === "MỞ") {
+        valveStateEl.className = "text-3xl font-extrabold font-mono text-purple-600";
+        valveLed.className = "w-4 h-4 rounded-full bg-rose-500 shadow-md shadow-rose-500/60 animate-pulse";
+        valveIconBox.className = "w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-2xl shrink-0 border border-purple-200";
+        valveIconBox.textContent = "🔓";
+        valveSubBadge.className = "px-2.5 py-1 rounded-md font-extrabold bg-purple-100 text-purple-800";
+        valveSubBadge.textContent = "Đang mở van xả đáy";
+        pipeValveBox.className = "p-3.5 rounded-2xl bg-purple-50 border border-purple-300 flex items-center justify-between";
+        pipeValveText.className = "text-xs font-extrabold text-purple-800 mt-0.5";
+        pipeValveText.textContent = "Đang MỞ van xả nước đáy bể (LED 2 sáng)";
+        pipeValveBadge.className = "px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-purple-600 text-white";
+        pipeValveBadge.textContent = "ĐANG MỞ";
+      } else {
+        valveStateEl.className = "text-3xl font-extrabold font-mono text-slate-400";
+        valveLed.className = "w-3.5 h-3.5 rounded-full bg-slate-300 border border-slate-400";
+        valveIconBox.className = "w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center text-2xl shrink-0 border border-slate-200";
+        valveIconBox.textContent = "🔒";
+        valveSubBadge.className = "px-2.5 py-1 rounded-md font-extrabold bg-slate-100 text-slate-600";
+        valveSubBadge.textContent = "Giữ nước trong bể";
+        pipeValveBox.className = "p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between";
+        pipeValveText.className = "text-xs font-extrabold text-slate-500 mt-0.5";
+        pipeValveText.textContent = "Cửa van đang ĐÓNG kín";
+        pipeValveBadge.className = "px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-200 text-slate-700";
+        pipeValveBadge.textContent = "ĐÓNG";
+      }
+
+      // 5. CẬP NHẬT NÚT CHUYỂN ĐỔI CHẾ ĐỘ LOGIC HAI CHIỀU (TỰ ĐỘNG ⇄ THỦ CÔNG)
+      const currentModeBanner = document.getElementById("currentModeBanner");
+      const currentModeIcon   = document.getElementById("currentModeIcon");
+      const currentModeTitle  = document.getElementById("currentModeTitle");
+      const currentModeDesc   = document.getElementById("currentModeDesc");
+      const modeSmallTag      = document.getElementById("modeSmallTag");
+      const modeTargetHint    = document.getElementById("modeTargetHint");
+      const toggleModeBtn     = document.getElementById("toggleModeBtn");
+      const toggleModeBtnIcon = document.getElementById("toggleModeBtnIcon");
+      const toggleModeBtnText = document.getElementById("toggleModeBtnText");
+      const manualBadge       = document.getElementById("manualPanelStatusBadge");
+
+      if (modeState === "THỦ CÔNG") {
+        // Đang ở THỦ CÔNG -> Nút bấm phải hiển thị "Chuyển về Chế Độ Tự Động"
+        currentModeBanner.className = "mt-4 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 flex items-center gap-3.5";
+        currentModeIcon.className   = "w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-3xl shrink-0 shadow-sm";
+        currentModeIcon.textContent = "🛠️";
+        currentModeTitle.className  = "text-xl font-extrabold text-amber-950 mt-0.5";
+        currentModeTitle.textContent = "ĐANG Ở CHẾ ĐỘ: THỦ CÔNG";
+        currentModeDesc.textContent  = "Đang ưu tiên điều khiển bằng tay. Bạn có thể tự do Bật 50% / 100% / Đóng Máy bơm và Mở/Đóng Van thoát ở bảng bên cạnh.";
+
+        modeSmallTag.className   = "text-xs font-mono font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300";
+        modeSmallTag.textContent = "Chế độ Thủ công";
+        modeTargetHint.className = "font-bold text-sky-700";
+        modeTargetHint.textContent = "Quay lại tự động theo 4 ngưỡng";
+
+        toggleModeBtn.className     = "w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-500 hover:to-teal-500 text-white font-extrabold text-base shadow-md shadow-sky-600/20 active:scale-[0.99] transition flex items-center justify-center gap-2.5 cursor-pointer";
+        toggleModeBtnIcon.textContent = "🤖";
+        toggleModeBtnText.textContent = "Chuyển về Chế Độ Tự Động";
+
+        manualBadge.className   = "self-start sm:self-auto text-xs font-extrabold px-3 py-1 rounded-xl bg-amber-100 text-amber-900 border border-amber-300";
+        manualBadge.textContent = "🛠️ Đang điều khiển Thủ công";
+      } else {
+        // Đang ở TỰ ĐỘNG -> Nút bấm phải hiển thị "Chuyển sang Chế Độ Thủ Công"
+        currentModeBanner.className = "mt-4 p-4 rounded-2xl bg-gradient-to-r from-sky-50 to-emerald-50 border-2 border-sky-200 flex items-center gap-3.5";
+        currentModeIcon.className   = "w-14 h-14 rounded-2xl bg-sky-600 text-white flex items-center justify-center text-3xl shrink-0 shadow-sm";
+        currentModeIcon.textContent = "🤖";
+        currentModeTitle.className  = "text-xl font-extrabold text-sky-950 mt-0.5";
+        currentModeTitle.textContent = "ĐANG Ở CHẾ ĐỘ: TỰ ĐỘNG";
+        currentModeDesc.innerHTML    = "Hệ thống tự động kiểm tra <strong>4 ngưỡng mực nước</strong> để đóng/mở Máy bơm (10s/20s) và Van thoát (10s).";
+
+        modeSmallTag.className   = "text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200";
+        modeSmallTag.textContent = "Chế độ Tự động";
+        modeTargetHint.className = "font-bold text-amber-700";
+        modeTargetHint.textContent = "Chuyển sang điều khiển bằng tay";
+
+        toggleModeBtn.className     = "w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-base shadow-md shadow-amber-500/20 active:scale-[0.99] transition flex items-center justify-center gap-2.5 cursor-pointer";
+        toggleModeBtnIcon.textContent = "🛠️";
+        toggleModeBtnText.textContent = "Chuyển sang Chế Độ Thủ Công";
+
+        manualBadge.className   = "self-start sm:self-auto text-xs font-extrabold px-3 py-1 rounded-xl bg-sky-50 text-sky-800 border border-sky-200";
+        manualBadge.textContent = "🤖 Đang Tự động (Bấm nút để sang Thủ công)";
+      }
+
+      const nowStr = new Date().toLocaleTimeString("vi-VN", { hour12: false });
+      document.getElementById("lastUpdateBadge").textContent = `Cập nhật: ${nowStr}`;
+    }
+
+    // ================= 4. XỬ LÝ NÚT CHUYỂN ĐỔI CHẾ ĐỘ HAI CHIỀU =================
+    function handleModeToggleClick() {
+      if (uiState.mode === "TỰ ĐỘNG") {
+        // Đang TỰ ĐỘNG -> Chuyển sang THỦ CÔNG
+        manualWebLock = true;
+        uiState.mode = "THỦ CÔNG";
+        updateDashboardUI({});
+
+        if (mqttClient && mqttClient.connected) {
+          mqttClient.publish(TOPIC_CONTROL, "MODE_MANUAL");
+        }
+        showToast("Đã chuyển sang Chế độ THỦ CÔNG!", "warning");
+      } else {
+        // Đang THỦ CÔNG -> Chuyển về TỰ ĐỘNG
+        manualWebLock = false;
+        autoSwitchHoldUntil = Date.now() + 2500;
+        uiState.mode = "TỰ ĐỘNG";
+        updateDashboardUI({});
+
+        if (mqttClient && mqttClient.connected) {
+          mqttClient.publish(TOPIC_CONTROL, "MODE_AUTO");
+        }
+        showToast("Đã chuyển về Chế độ TỰ ĐỘNG!", "success");
+      }
+    }
+
+    // ================= 5. GỬI LỆNH ĐIỀU KHIỂN THỦ CÔNG BƠM (50% / 100% / ĐÓNG) & VAN =================
+    function sendControlCommand(commandStr, vietnameseMessage) {
+      if (commandStr === "MODE_AUTO") {
+        manualWebLock = false;
+        autoSwitchHoldUntil = Date.now() + 2500;
+        uiState.mode = "TỰ ĐỘNG";
+      } else if (commandStr === "PUMP_50") {
+        manualWebLock = true;
+        uiState.mode = "THỦ CÔNG";
+        uiState.pump = "50%";
+      } else if (commandStr === "PUMP_ON") {
+        manualWebLock = true;
+        uiState.mode = "THỦ CÔNG";
+        uiState.pump = "100%";
+      } else if (commandStr === "PUMP_OFF") {
+        manualWebLock = true;
+        uiState.mode = "THỦ CÔNG";
+        uiState.pump = "ĐÓNG";
+      } else if (commandStr === "VALVE_ON") {
+        manualWebLock = true;
+        uiState.mode = "THỦ CÔNG";
+        uiState.valve = "MỞ";
+      } else if (commandStr === "VALVE_OFF") {
+        manualWebLock = true;
+        uiState.mode = "THỦ CÔNG";
+        uiState.valve = "ĐÓNG";
+      }
+      updateDashboardUI({});
+
+      if (mqttClient && mqttClient.connected) {
+        mqttClient.publish(TOPIC_CONTROL, commandStr);
+        showToast(vietnameseMessage, "success");
+      } else {
+        showToast(vietnameseMessage, "info");
+      }
+    }
+
+    // ================= 6. KẾT NỐI MQTT OVER WEBSOCKET =================
+    function initMQTT() {
+      const statusDot  = document.getElementById("mqttDot");
+      const statusText = document.getElementById("mqttStatusText");
+      const clientId   = "AquaSmart_De4_" + Math.random().toString(16).substring(2, 8);
+
+      statusDot.className = "w-3 h-3 rounded-full bg-amber-400 animate-pulse shrink-0";
+      statusText.textContent = "Đang kết nối MQTT...";
+
+      mqttClient = mqtt.connect(MQTT_BROKER_URL, {
+        clientId: clientId,
+        clean: true,
+        connectTimeout: 5000,
+        reconnectPeriod: 3000,
+      });
+
+      mqttClient.on("connect", () => {
+        statusDot.className = "w-3 h-3 rounded-full bg-emerald-400 shadow-sm shadow-emerald-300 shrink-0";
+        statusText.textContent = "Đã kết nối EMQX Broker";
+        mqttClient.subscribe(TOPIC_TELEMETRY);
+      });
+
+      mqttClient.on("message", (topic, message) => {
+        if (topic === TOPIC_TELEMETRY) {
+          try {
+            const parsed = JSON.parse(message.toString());
+            updateDashboardUI(parsed);
+          } catch (e) {
+            // Bỏ qua nếu gói tin không đúng định dạng JSON
+          }
+        }
+      });
+
+      mqttClient.on("error", () => {
+        statusDot.className = "w-3 h-3 rounded-full bg-rose-500 shrink-0";
+        statusText.textContent = "Lỗi kết nối MQTT";
+      });
+
+      mqttClient.on("offline", () => {
+        statusDot.className = "w-3 h-3 rounded-full bg-amber-400 animate-pulse shrink-0";
+        statusText.textContent = "Mất kết nối (Đang thử lại...)";
+      });
+    }
+
+    function reconnectMQTT() {
+      if (mqttClient) {
+        mqttClient.end(true);
+      }
+      showToast("Đang kết nối lại tới MQTT Broker...", "info");
+      initMQTT();
+    }
+
+    // Khởi chạy khi mở trang
+    window.addEventListener("DOMContentLoaded", () => {
+      updateDashboardUI({});
+      initMQTT();
+    });
+  </script>
+</body>
+</html>
