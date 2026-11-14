@@ -33,6 +33,7 @@ Xây dựng và mô phỏng hoàn chỉnh hệ thống nhúng IoT tự động g
 #### a) Cảm biến siêu âm HC-SR04[cite: 2]
 ![Cảm biến siêu âm HC-SR04]
 
+<p align="center">
 <img width="331" height="245" alt="image" src="https://github.com/user-attachments/assets/c3b81e72-db5e-40c9-b696-71edf2c716e7" />
 
 
