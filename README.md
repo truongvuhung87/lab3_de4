@@ -33,7 +33,6 @@ Xây dựng và mô phỏng hoàn chỉnh hệ thống nhúng IoT tự động g
 ### 1.2. Các cảm biến chính sử dụng.
 
 #### a) Cảm biến siêu âm HC-SR04
-[Cảm biến siêu âm HC-SR04]
 
 <p align="center">
 <img width="331" height="245" alt="image" src="https://github.com/user-attachments/assets/c3b81e72-db5e-40c9-b696-71edf2c716e7" />
@@ -57,7 +56,6 @@ $$h = H - d$$
 Trong đó $H$ là khoảng cách từ vị trí đặt cảm biến đến đáy bể.
 
 #### b) Cảm biến nhiệt độ DS18B20
-[Cảm biến nhiệt độ DS18B20]
 
 <p align="center">
 <img width="272" height="325" alt="image" src="https://github.com/user-attachments/assets/ff85d7e1-faa9-47f2-99ee-f0ecb44c9bb2" />
