@@ -186,15 +186,12 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 ### Kiểm thử kết nối và truyền nhận dữ liệu trên MQTTX
 
 * **Giao diện kết nối:**
-[Giao diện kết nối MQTTX]
-
 
 <p align="center">
 <img width="980" height="501" alt="image" src="https://github.com/user-attachments/assets/f87dc0fb-387f-4cf1-9243-e0a47e7fb9d6" />
 
 
 * **Khi nạp code vào mạch mô phỏng thì có kết quả và gửi dữ liệu kết quả cho MQTTX:**
-[Mô phỏng Wokwi gửi dữ liệu MQTT]
 
 
 <p align="center">
@@ -202,8 +199,6 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 
 
 * **Dữ liệu nhận được từ topic `utc/iot_lab/de4/telemetry` trên MQTTX:**
-[Dữ liệu nhận được trên MQTTX]
-
 
 <p align="center">
 <img width="980" height="419" alt="image" src="https://github.com/user-attachments/assets/ecb7fa8d-d87b-42ec-b20d-38391da91327" />
@@ -211,7 +206,6 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 
 * **Điều khiển PUMP/VALVE thông qua topic `utc/iot_lab/de4/control` từ MQTTX:**
   * *Khi điều khiển bật máy bơm từ MQTTX:*
-  [Lệnh PUMP_ON trên MQTTX]
 
 
 <p align="center">
@@ -226,7 +220,6 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 
 
   * *Khi bật van xả từ MQTTX:*
-  [Lệnh VALVE_ON trên MQTTX]
 
 
 <p align="center">
