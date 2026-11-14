@@ -54,87 +54,100 @@ $$h = H - d$$
 
 Trong đó $H$ là khoảng cách từ vị trí đặt cảm biến đến đáy bể.
 
-#### b) Cảm biến nhiệt độ DS18B20[cite: 2]
-![Cảm biến nhiệt độ DS18B20](images/ds18b20.png)
+#### b) Cảm biến nhiệt độ DS18B20
+![Cảm biến nhiệt độ DS18B20]
 
-* DS18B20 là cảm biến nhiệt độ số sử dụng giao tiếp 1-Wire, cho phép truyền dữ liệu qua một đường tín hiệu[cite: 2].
-* Cảm biến có dải đo từ $-55^\circ\text{C}$ đến $+125^\circ\text{C}$, độ chính xác $\pm 0,5^\circ\text{C}$[cite: 2]. Đơn vị nhiệt độ sử dụng trong bài là độ C ($^\circ\text{C}$)[cite: 2].
+<p align="center">
+<img width="272" height="325" alt="image" src="https://github.com/user-attachments/assets/ff85d7e1-faa9-47f2-99ee-f0ecb44c9bb2" />
+
+
+* DS18B20 là cảm biến nhiệt độ số sử dụng giao tiếp 1-Wire, cho phép truyền dữ liệu qua một đường tín hiệu.
+* Cảm biến có dải đo từ $-55^\circ\text{C}$ đến $+125^\circ\text{C}$, độ chính xác $\pm 0,5^\circ\text{C}$. Đơn vị nhiệt độ sử dụng trong bài là độ C ($^\circ\text{C}$).
 
 ---
 
-## 2. Sơ đồ kết nối mạch trên Wokwi[cite: 2]
+## 2. Sơ đồ kết nối mạch trên Wokwi
 
-![Sơ đồ kết nối mạch trên Wokwi](images/wokwi_schematic.png)
+![Sơ đồ kết nối mạch trên Wokwi]
 
-**Bảng kết nối chân:**[cite: 2]
+<p align="center">
+<img width="980" height="625" alt="image" src="https://github.com/user-attachments/assets/7e1f4da3-fbd4-48be-865a-cd7c090674d9" />
+
+
+**Bảng kết nối chân:**
 
 | Linh kiện | Tên chân linh kiện | Chân trên ESP32 |
 | :--- | :--- | :--- |
-| **Cảm biến khoảng cách HC-SR04** | VCC | 5V[cite: 2] |
-| | TRIG | GPIO 5[cite: 2] |
-| | ECHO | GPIO 18[cite: 2] |
-| | GND | GND[cite: 2] |
-| **Cảm biến nhiệt độ DS18B20** | VCC (VDD) | 3V3[cite: 2] |
-| | DQ (Data) | GPIO 4[cite: 2] |
-| | GND | GND[cite: 2] |
-| **Relay Module 1 (Van)** | VCC | 5V[cite: 2] |
-| | GND | GND[cite: 2] |
-| | IN | GPIO 27[cite: 2] |
-| **Relay Module 2 (Bơm)** | VCC | 5V[cite: 2] |
-| | GND | GND[cite: 2] |
-| | IN | GPIO 25[cite: 2] |
-| **LED Chỉ thị 1 (qua điện trở)** | Chân Dương (+) | GPIO 26[cite: 2] |
-| | Chân Âm (-) | GND[cite: 2] |
-| **LED Chỉ thị 2 (qua điện trở)** | Chân Dương (+) | GPIO 14[cite: 2] |
-| | Chân Âm (-) | GND[cite: 2] |
+| **Cảm biến khoảng cách HC-SR04** | VCC | 5V |
+| | TRIG | GPIO 5 |
+| | ECHO | GPIO 18 |
+| | GND | GND |
+| **Cảm biến nhiệt độ DS18B20** | VCC (VDD) | 3V3 |
+| | DQ (Data) | GPIO 4 |
+| | GND | GND |
+| **Relay Module 1 (Van)** | VCC | 5V |
+| | GND | GND |
+| | IN | GPIO 27 |
+| **Relay Module 2 (Bơm)** | VCC | 5V |
+| | GND | GND |
+| | IN | GPIO 25 |
+| **LED Chỉ thị 1 (qua điện trở)** | Chân Dương (+) | GPIO 26 |
+| | Chân Âm (-) | GND |
+| **LED Chỉ thị 2 (qua điện trở)** | Chân Dương (+) | GPIO 14 |
+| | Chân Âm (-) | GND |
 
 ---
 
-## 3. Xây dựng hệ điều hành thời gian thực FreeRTOS trên ESP32[cite: 2]
+## 3. Xây dựng hệ điều hành thời gian thực FreeRTOS trên ESP32
 
-### 3.1. Kiến trúc phân bổ đa nhiệm trên 2 lõi (Dual-Core)[cite: 2]
-Để đảm bảo tính thời gian thực (Real-time) và ngăn ngừa việc xử lý giao thức mạng làm gián đoạn quá trình điều khiển bể nuôi, hệ thống sử dụng hàm `xTaskCreatePinnedToCore()` của FreeRTOS trên ESP32 nhằm ghim cố định các tác vụ (Task) vào từng lõi vật lý riêng biệt[cite: 2]:
+### 3.1. Kiến trúc phân bổ đa nhiệm trên 2 lõi (Dual-Core)
+Để đảm bảo tính thời gian thực (Real-time) và ngăn ngừa việc xử lý giao thức mạng làm gián đoạn quá trình điều khiển bể nuôi, hệ thống sử dụng hàm `xTaskCreatePinnedToCore()` của FreeRTOS trên ESP32 nhằm ghim cố định các tác vụ (Task) vào từng lõi vật lý riêng biệt:
 
 | Tên Task | Lõi thực thi | Mức ưu tiên | Nhiệm vụ thiết kế |
 | :--- | :---: | :---: | :--- |
-| **Task truyền data** | Core 0 | 1 | Kết nối Wi-Fi và MQTT Broker; đọc dữ liệu từ hàng đợi `data Queue` để gửi lên Broker; nhận lệnh điều khiển từ Web[cite: 2]. |
-| **Task đọc data** | Core 1 | 2 | Đọc cảm biến HC-SR04 và nhiệt độ bể; hiển thị lên Serial Monitor; đẩy dữ liệu đầy đủ vào `data Queue` và đẩy mực nước vào `data Alert`[cite: 2]. |
-| **Task cảnh báo** | Core 1 | 3 | Đọc dữ liệu mực nước từ `data Alert`; thực thi thuật toán điều khiển công suất Máy bơm (PWM) và Van thoát nước theo thời gian quy định[cite: 2]. |
+| **Task truyền data** | Core 0 | 1 | Kết nối Wi-Fi và MQTT Broker; đọc dữ liệu từ hàng đợi `data Queue` để gửi lên Broker; nhận lệnh điều khiển từ Web |
+| **Task đọc data** | Core 1 | 2 | Đọc cảm biến HC-SR04 và nhiệt độ bể; hiển thị lên Serial Monitor; đẩy dữ liệu đầy đủ vào `data Queue` và đẩy mực nước vào `data Alert` |
+| **Task cảnh báo** | Core 1 | 3 | Đọc dữ liệu mực nước từ `data Alert`; thực thi thuật toán điều khiển công suất Máy bơm (PWM) và Van thoát nước theo thời gian quy định |
 
-### 3.2. Thiết kế Hàng đợi (Queue) giao tiếp giữa các Task[cite: 2]
-Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FIFO (First-In, First-Out) để truyền các gói dữ liệu theo khối (bản tin) và đồng bộ hóa hoạt động giữa 3 Task mà không xảy ra xung đột bộ nhớ[cite: 2]:
+### 3.2. Thiết kế Hàng đợi (Queue) giao tiếp giữa các Task
+Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FIFO (First-In, First-Out) để truyền các gói dữ liệu theo khối (bản tin) và đồng bộ hóa hoạt động giữa 3 Task mà không xảy ra xung đột bộ nhớ
 
-* **Hàng đợi `data Queue`:**[cite: 2]
-  * **Mục đích:** Truyền toàn bộ thông số môi trường từ `Task đọc data` (Core 1) sang `Task truyền data` (Core 0)[cite: 2].
-  * **Kiểu dữ liệu phần tử:** Một cấu trúc dữ liệu (`struct SensorData`) gồm 2 trường là `waterLevel` (kiểu `float` - mực nước tính bằng mét) và `temperature` (kiểu `float` - nhiệt độ bể tính bằng độ C)[cite: 2].
-* **Hàng đợi `data Alert`:**[cite: 2]
-  * **Mục đích:** Truyền riêng thông số mực nước từ `Task đọc data` (Core 1) sang `Task cảnh báo` (Core 1) để xử lý thuật toán điều khiển cơ cấu chấp hành[cite: 2].
-  * **Kiểu dữ liệu phần tử:** Biến số thực (`float`) biểu diễn giá trị mực nước hiện tại (đơn vị: mét)[cite: 2].
+* **Hàng đợi `data Queue`:**
+  * **Mục đích:** Truyền toàn bộ thông số môi trường từ `Task đọc data` (Core 1) sang `Task truyền data` (Core 0)
+  * **Kiểu dữ liệu phần tử:** Một cấu trúc dữ liệu (`struct SensorData`) gồm 2 trường là `waterLevel` (kiểu `float` - mực nước tính bằng mét) và `temperature` (kiểu `float` - nhiệt độ bể tính bằng độ C)
+* **Hàng đợi `data Alert`:**
+  * **Mục đích:** Truyền riêng thông số mực nước từ `Task đọc data` (Core 1) sang `Task cảnh báo` (Core 1) để xử lý thuật toán điều khiển cơ cấu chấp hành
+  * **Kiểu dữ liệu phần tử:** Biến số thực (`float`) biểu diễn giá trị mực nước hiện tại (đơn vị: mét)
 
-### 3.3. Chi tiết hoạt động và thuật toán của các Task[cite: 2]
+### 3.3. Chi tiết hoạt động và thuật toán của các Task
 
-#### a) Hoạt động của "Task đọc data" (Chạy trên Core 1)[cite: 2]
-* Định kỳ mỗi chu kỳ lấy mẫu, Task phát xung kích $10\ \mu\text{s}$ vào chân `TRIG` của cảm biến HC-SR04, đo thời gian phản hồi trên chân `ECHO` và tính toán ra thông số mực nước (đơn vị: m)[cite: 2].
-* Tiếp theo, Task yêu cầu cảm biến DS18B20 chuyển đổi và đọc giá trị nhiệt độ nước trong bể qua bus 1-Wire[cite: 2].
-* Các thông số thu thập được sẽ được xuất trực tiếp ra màn hình Serial Monitor thông qua bộ giao tiếp nối tiếp UART0 (`Serial.printf`) ở tốc độ baud `115200` để phục vụ giám sát cục bộ[cite: 2].
-* Sau đó, Task đóng gói cả mực nước và nhiệt độ gửi vào hàng đợi `data Queue` bằng API `xQueueSend()`, đồng thời gửi riêng giá trị mực nước vào hàng đợi `data Alert` trước khi gọi hàm `vTaskDelay()` để chuyển sang trạng thái khóa (Blocked) chờ chu kỳ đọc tiếp theo[cite: 2].
+#### a) Hoạt động của "Task đọc data" (Chạy trên Core 1)
+* Định kỳ mỗi chu kỳ lấy mẫu, Task phát xung kích $10\ \mu\text{s}$ vào chân `TRIG` của cảm biến HC-SR04, đo thời gian phản hồi trên chân `ECHO` và tính toán ra thông số mực nước (đơn vị: m)
+* Tiếp theo, Task yêu cầu cảm biến DS18B20 chuyển đổi và đọc giá trị nhiệt độ nước trong bể qua bus 1-Wire
+* Các thông số thu thập được sẽ được xuất trực tiếp ra màn hình Serial Monitor thông qua bộ giao tiếp nối tiếp UART0 (`Serial.printf`) ở tốc độ baud `115200` để phục vụ giám sát cục bộ
+* Sau đó, Task đóng gói cả mực nước và nhiệt độ gửi vào hàng đợi `data Queue` bằng API `xQueueSend()`, đồng thời gửi riêng giá trị mực nước vào hàng đợi `data Alert` trước khi gọi hàm `vTaskDelay()` để chuyển sang trạng thái khóa (Blocked) chờ chu kỳ đọc tiếp theo
 
-#### b) Hoạt động của "Task cảnh báo" và Thuật toán điều khiển mực nước (Chạy trên Core 1)[cite: 2]
-* Task luôn chờ bản tin từ hàng đợi `data Alert` thông qua hàm `xQueueReceive()`[cite: 2]. Khi không có dữ liệu mới trong hàng đợi, Task ở trạng thái Blocked và không tiêu tốn tài nguyên CPU[cite: 2].
-* Ngay khi nhận được giá trị mực nước từ `data Alert`, nếu hệ thống đang ở chế độ tự động (Auto), Task sẽ kiểm tra các ngưỡng điều kiện và điều khiển cơ cấu chấp hành theo đúng thuật toán[cite: 2]:
-  * **Ngưỡng 1 (Mực nước từ 1m đến 1.5m):** Hệ thống kích hoạt Máy bơm nước Vào hoạt động ở 50% công suất và tắt Van thoát[cite: 2]. Trạng thái bơm 50% được duy trì trong đúng 10 giây, sau đó tự động tắt máy bơm[cite: 2].
-  * **Ngưỡng 2 (Mực nước từ 1.5m đến 2m):** Hệ thống kích hoạt Máy bơm nước Vào hoạt động ở 100% công suất và tắt Van thoát[cite: 2]. Trạng thái bơm 100% được duy trì trong đúng 20 giây, sau đó tự động tắt máy bơm[cite: 2].
-  * **Ngưỡng 3 (Mực nước nhỏ hơn 0.5m):** Hệ thống tắt Máy bơm và bật Van thoát nước Ra[cite: 2]. Trạng thái mở van thoát được duy trì trong đúng 10 giây, sau đó tự động đóng van[cite: 2].
-  * **Ngưỡng bình thường (Mực nước từ 0.5m đến dưới 1m):** Cả Máy bơm nước Vào và Van thoát nước Ra đều được giữ ở trạng thái nghỉ (OFF)[cite: 2].
-* Nhờ cơ chế đa nhiệm chiếm quyền của FreeRTOS, trong suốt khoảng thời gian `Task cảnh báo` tạm dừng 10s hoặc 20s bằng `vTaskDelay()`, nhân hệ điều hành sẽ nhường CPU cho `Task đọc data` tiếp tục cập nhật thông số cảm biến và đẩy dữ liệu lên Web mà không làm đứng toàn bộ hệ thống như khi dùng hàm `delay()` thông thường trong vòng lặp Super Loop[cite: 2].
+#### b) Hoạt động của "Task cảnh báo" và Thuật toán điều khiển mực nước (Chạy trên Core 1)
+* Task luôn chờ bản tin từ hàng đợi `data Alert` thông qua hàm `xQueueReceive()`. Khi không có dữ liệu mới trong hàng đợi, Task ở trạng thái Blocked và không tiêu tốn tài nguyên CPU
+* Ngay khi nhận được giá trị mực nước từ `data Alert`, nếu hệ thống đang ở chế độ tự động (Auto), Task sẽ kiểm tra các ngưỡng điều kiện và điều khiển cơ cấu chấp hành theo đúng thuật toán
+  * **Ngưỡng 1 (Mực nước từ 1m đến 1.5m):** Hệ thống kích hoạt Máy bơm nước Vào hoạt động ở 50% công suất và tắt Van thoát. Trạng thái bơm 50% được duy trì trong đúng 10 giây, sau đó tự động tắt máy bơm
+  * **Ngưỡng 2 (Mực nước từ 1.5m đến 2m):** Hệ thống kích hoạt Máy bơm nước Vào hoạt động ở 100% công suất và tắt Van thoát. Trạng thái bơm 100% được duy trì trong đúng 20 giây, sau đó tự động tắt máy bơm
+  * **Ngưỡng 3 (Mực nước nhỏ hơn 0.5m):** Hệ thống tắt Máy bơm và bật Van thoát nước Ra. Trạng thái mở van thoát được duy trì trong đúng 10 giây, sau đó tự động đóng van
+  * **Ngưỡng bình thường (Mực nước từ 0.5m đến dưới 1m):** Cả Máy bơm nước Vào và Van thoát nước Ra đều được giữ ở trạng thái nghỉ (OFF)
+* Nhờ cơ chế đa nhiệm chiếm quyền của FreeRTOS, trong suốt khoảng thời gian `Task cảnh báo` tạm dừng 10s hoặc 20s bằng `vTaskDelay()`, nhân hệ điều hành sẽ nhường CPU cho `Task đọc data` tiếp tục cập nhật thông số cảm biến và đẩy dữ liệu lên Web mà không làm đứng toàn bộ hệ thống như khi dùng hàm `delay()` thông thường trong vòng lặp Super Loop
 
-#### c) Hoạt động của "Task truyền data" (Chạy trên Core 0)[cite: 2]
-* Khi khởi động trên Core 0, Task tiến hành kết nối vào mạng Wi-Fi ảo của Wokwi (`Wokwi-GUEST`) và thiết lập kết nối TCP tới máy chủ trung gian MQTT Broker[cite: 2].
-* Trong vòng lặp chính, Task duy trì kết nối MQTT, kiểm tra nếu kết nối thành công thì đọc gói dữ liệu từ hàng đợi `data Queue`[cite: 2].
-* Khi lấy được dữ liệu từ `data Queue`, Task đóng gói giá trị Mực nước, Nhiệt độ bể cùng trạng thái Bơm/Van thành chuỗi định dạng JSON và phát (Publish) lên Topic dữ liệu của MQTT Broker[cite: 2].
-* Đồng thời, thông qua hàm ngắt nhận tin (Callback) khi đăng ký (Subscribe) Topic điều khiển, Task tiếp nhận các lệnh bật/tắt Máy bơm và Van thoát từ người dùng trên giao diện Web ở chế độ điều khiển thủ công[cite: 2].
+#### c) Hoạt động của "Task truyền data" (Chạy trên Core 0)
+* Khi khởi động trên Core 0, Task tiến hành kết nối vào mạng Wi-Fi ảo của Wokwi (`Wokwi-GUEST`) và thiết lập kết nối TCP tới máy chủ trung gian MQTT Broker
+* Trong vòng lặp chính, Task duy trì kết nối MQTT, kiểm tra nếu kết nối thành công thì đọc gói dữ liệu từ hàng đợi `data Queue`
+* Khi lấy được dữ liệu từ `data Queue`, Task đóng gói giá trị Mực nước, Nhiệt độ bể cùng trạng thái Bơm/Van thành chuỗi định dạng JSON và phát (Publish) lên Topic dữ liệu của MQTT Broker
+* Đồng thời, thông qua hàm ngắt nhận tin (Callback) khi đăng ký (Subscribe) Topic điều khiển, Task tiếp nhận các lệnh bật/tắt Máy bơm và Van thoát từ người dùng trên giao diện Web ở chế độ điều khiển thủ công
 
-![Lưu đồ thuật toán hệ thống RTOS](images/rtos_flowchart.png)
+![Lưu đồ thuật toán hệ thống RTOS]
+
+
+<p align="center">
+<img width="868" height="764" alt="image" src="https://github.com/user-attachments/assets/40da968f-6b02-4c7a-a0c6-c01649ec0a50" />
+
 
 ---
 
