@@ -16,7 +16,9 @@ Link MQTT Broker:
 https://mqttx.app/web-client#/recent_connections/a6d055d7-3c46-41b2-b0f0-837b71de7732
 
 
-# THIẾT KẾ MẠCH TỰ ĐỘNG GIÁM SÁT THÔNG SỐ MÔI TRƯỜNG CHO BỂ NUÔI THỦY, HẢI SẢN.
+<div align="center">
+  <h1>THIẾT KẾ MẠCH TỰ ĐỘNG GIÁM SÁT THÔNG SỐ MÔI TRƯỜNG CHO BỂ NUÔI THỦY, HẢI SẢN</h1>
+</div>
 
 * **Họ và tên:** Vũ Hùng Trường
 * **Mã sinh viên:** 231402381
@@ -31,7 +33,7 @@ Xây dựng và mô phỏng hoàn chỉnh hệ thống nhúng IoT tự động g
 ### 1.2. Các cảm biến chính sử dụng.
 
 #### a) Cảm biến siêu âm HC-SR04[cite: 2]
-![Cảm biến siêu âm HC-SR04]
+[Cảm biến siêu âm HC-SR04]
 
 <p align="center">
 <img width="331" height="245" alt="image" src="https://github.com/user-attachments/assets/c3b81e72-db5e-40c9-b696-71edf2c716e7" />
@@ -55,7 +57,7 @@ $$h = H - d$$
 Trong đó $H$ là khoảng cách từ vị trí đặt cảm biến đến đáy bể.
 
 #### b) Cảm biến nhiệt độ DS18B20
-![Cảm biến nhiệt độ DS18B20]
+[Cảm biến nhiệt độ DS18B20]
 
 <p align="center">
 <img width="272" height="325" alt="image" src="https://github.com/user-attachments/assets/ff85d7e1-faa9-47f2-99ee-f0ecb44c9bb2" />
@@ -68,7 +70,7 @@ Trong đó $H$ là khoảng cách từ vị trí đặt cảm biến đến đá
 
 ## 2. Sơ đồ kết nối mạch trên Wokwi
 
-![Sơ đồ kết nối mạch trên Wokwi]
+[Sơ đồ kết nối mạch trên Wokwi]
 
 <p align="center">
 <img width="980" height="625" alt="image" src="https://github.com/user-attachments/assets/7e1f4da3-fbd4-48be-865a-cd7c090674d9" />
@@ -142,7 +144,7 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 * Khi lấy được dữ liệu từ `data Queue`, Task đóng gói giá trị Mực nước, Nhiệt độ bể cùng trạng thái Bơm/Van thành chuỗi định dạng JSON và phát (Publish) lên Topic dữ liệu của MQTT Broker
 * Đồng thời, thông qua hàm ngắt nhận tin (Callback) khi đăng ký (Subscribe) Topic điều khiển, Task tiếp nhận các lệnh bật/tắt Máy bơm và Van thoát từ người dùng trên giao diện Web ở chế độ điều khiển thủ công
 
-![Lưu đồ thuật toán hệ thống RTOS]
+[Lưu đồ thuật toán hệ thống RTOS]
 
 
 <p align="center">
@@ -187,7 +189,7 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 ### Kiểm thử kết nối và truyền nhận dữ liệu trên MQTTX
 
 * **Giao diện kết nối:**
-![Giao diện kết nối MQTTX]
+[Giao diện kết nối MQTTX]
 
 
 <p align="center">
@@ -195,7 +197,7 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 
 
 * **Khi nạp code vào mạch mô phỏng thì có kết quả và gửi dữ liệu kết quả cho MQTTX:**
-![Mô phỏng Wokwi gửi dữ liệu MQTT]
+[Mô phỏng Wokwi gửi dữ liệu MQTT]
 
 
 <p align="center">
@@ -203,7 +205,7 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 
 
 * **Dữ liệu nhận được từ topic `utc/iot_lab/de4/telemetry` trên MQTTX:**
-![Dữ liệu nhận được trên MQTTX]
+[Dữ liệu nhận được trên MQTTX]
 
 
 <p align="center">
@@ -212,74 +214,134 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 
 * **Điều khiển PUMP/VALVE thông qua topic `utc/iot_lab/de4/control` từ MQTTX:**
   * *Khi điều khiển bật máy bơm từ MQTTX:*
-  ![Lệnh PUMP_ON trên MQTTX]
+  [Lệnh PUMP_ON trên MQTTX]
 
 
 <p align="center">
  <img width="856" height="202" alt="image" src="https://github.com/user-attachments/assets/f9cd2626-9c41-4ef5-a3d7-c52601e7e481" />
 
 
-  ![Kết quả bật máy bơm trên Wokwi]
+  [Kết quả bật máy bơm trên Wokwi]
 
 
   <p align="center">
   <img width="912" height="878" alt="image" src="https://github.com/user-attachments/assets/86572dde-f58e-4562-aa9d-fccee02992fa" />
 
 
-  * *Khi bật van xả từ MQTTX:*[cite: 2]
-  ![Lệnh VALVE_ON trên MQTTX](images/mqttx_valve_on_cmd.png)
-  ![Kết quả mở van xả trên Wokwi](images/wokwi_valve_on_result.png)
+  * *Khi bật van xả từ MQTTX:*
+  [Lệnh VALVE_ON trên MQTTX]
+
+
+<p align="center">
+ <img width="866" height="169" alt="image" src="https://github.com/user-attachments/assets/9f5bc0b3-c596-4010-974f-5d4ed70c58f9" />
+
+  [Kết quả mở van xả trên Wokwi]
+
+
+  <p align="center">
+  <img width="912" height="907" alt="image" src="https://github.com/user-attachments/assets/40009091-c265-4bda-aeff-872f42ca74a8" />
+
 
 ---
 
-## 5. Thiết kế giao diện website để hiển thị dữ liệu/điều khiển[cite: 2]
+## 5. Thiết kế giao diện website để hiển thị dữ liệu/điều khiển
 
-Website được xây dựng bằng HTML, CSS và JavaScript nhằm giám sát, hiển thị dữ liệu và điều khiển hệ thống quản lý bể nuôi thủy, hải sản thông minh thông qua giao thức MQTT[cite: 2].
+Website được xây dựng bằng HTML, CSS và JavaScript nhằm giám sát, hiển thị dữ liệu và điều khiển hệ thống quản lý bể nuôi thủy, hải sản thông minh thông qua giao thức MQTT
 
-### Các chức năng chính[cite: 2]
-* Hiển thị thông số mực nước bể nuôi (m) và nhiệt độ nước bể ($^\circ\text{C}$) dạng số thông qua các thẻ HTML class[cite: 2].
-* Hiển thị cảnh báo vùng ngưỡng mực nước hiện tại (4 ngưỡng) và đánh giá trạng thái môi trường nhiệt độ[cite: 2].
-* Hiển thị trạng thái hoạt động, công suất xung PWM của Máy bơm và trạng thái Đóng/Mở của Van thoát[cite: 2].
-* Sử dụng biểu đồ theo dõi sự thay đổi mực nước, nhiệt độ theo thời gian thực và mô phỏng trực quan mặt cắt bể nuôi trung tâm[cite: 2].
-* Cung cấp các nút điều khiển Máy bơm (Bật 50%, Bật 100%, Đóng bơm) và Van thoát đáy (Mở van, Đóng van)[cite: 2].
-* Cho phép chuyển đổi linh hoạt giữa chế độ vận hành Tự động (`AUTO`) và Thủ công (`MANUAL`)[cite: 2].
+### Các chức năng chính
+* Hiển thị thông số mực nước bể nuôi (m) và nhiệt độ nước bể ($^\circ\text{C}$) dạng số thông qua các thẻ HTML class
+* Hiển thị cảnh báo vùng ngưỡng mực nước hiện tại (4 ngưỡng) và đánh giá trạng thái môi trường nhiệt độ
+* Hiển thị trạng thái hoạt động, công suất xung PWM của Máy bơm và trạng thái Đóng/Mở của Van thoát
+* Sử dụng biểu đồ theo dõi sự thay đổi mực nước, nhiệt độ theo thời gian thực và mô phỏng trực quan mặt cắt bể nuôi trung tâm
+* Cung cấp các nút điều khiển Máy bơm (Bật 50%, Bật 100%, Đóng bơm) và Van thoát đáy (Mở van, Đóng van)
+* Cho phép chuyển đổi linh hoạt giữa chế độ vận hành Tự động (`AUTO`) và Thủ công (`MANUAL`)
 
-### Nguyên lý hoạt động[cite: 2]
-* Website sử dụng thư viện `MQTT.js` để kết nối với MQTT Broker EMQX thông qua giao thức WebSocket[cite: 2].
-* Đăng ký (Subscribe) nhận dữ liệu từ ESP32 trên Wokwi gửi lên để cập nhật thông số cảm biến và trạng thái thiết bị lên giao diện[cite: 2].
-* Khi người dùng nhấn các nút chuyển đổi chế độ hoặc điều khiển thủ công, Website gửi (Publish) lệnh điều khiển tới Topic `utc/iot_lab/de4/control`[cite: 2].
-* ESP32 nhận lệnh từ MQTT Broker, xử lý và điều khiển đóng/ngắt hoặc băm xung PWM cho Máy bơm và Van thoát tương ứng[cite: 2].
+### Nguyên lý hoạt động
+* Website sử dụng thư viện `MQTT.js` để kết nối với MQTT Broker EMQX thông qua giao thức WebSocket
+* Đăng ký (Subscribe) nhận dữ liệu từ ESP32 trên Wokwi gửi lên để cập nhật thông số cảm biến và trạng thái thiết bị lên giao diện
+* Khi người dùng nhấn các nút chuyển đổi chế độ hoặc điều khiển thủ công, Website gửi (Publish) lệnh điều khiển tới Topic `utc/iot_lab/de4/control`
+* ESP32 nhận lệnh từ MQTT Broker, xử lý và điều khiển đóng/ngắt hoặc băm xung PWM cho Máy bơm và Van thoát tương ứng
 
-**Kết quả:** Website giám sát chính xác dữ liệu mực nước và nhiệt độ bể nuôi theo thời gian thực, hiển thị trực quan trạng thái cảnh báo và điều khiển từ xa Máy bơm, Van thoát ổn định[cite: 2].
+**Kết quả:** Website giám sát chính xác dữ liệu mực nước và nhiệt độ bể nuôi theo thời gian thực, hiển thị trực quan trạng thái cảnh báo và điều khiển từ xa Máy bơm, Van thoát ổn định
 
-![Giao diện Website Dashboard - Phần điều khiển](images/web_dashboard_1.png)
-![Giao diện Website Dashboard - Mặt cắt bể nuôi](images/web_dashboard_2.png)
+[Giao diện Website Dashboard - Phần điều khiển]
+
+
+<p align="center">
+ <img width="980" height="531" alt="image" src="https://github.com/user-attachments/assets/f3ce6919-2c3c-40be-86eb-45c610f837f9" />
+
+[Giao diện Website Dashboard - Mặt cắt bể nuôi]
+
+
+<p align="center">
+<img width="980" height="533" alt="image" src="https://github.com/user-attachments/assets/b6a51bf1-afe0-4181-b4a9-a8a181a33cb9" />
+
 
 ---
 
-## 6. Quá trình tạo kết nối, cập nhật dữ liệu và điều khiển[cite: 2]
+## 6. Quá trình tạo kết nối, cập nhật dữ liệu và điều khiển
 
-* **Thiết lập kết nối Wi-Fi và MQTT:** ESP32 kết nối Internet qua mạng Wi-Fi `Wokwi-GUEST` và thiết lập giao tiếp với máy chủ MQTT Broker tại địa chỉ `broker.emqx.io` (cổng `1883`)[cite: 2]. Sau khi kết nối thành công, thiết bị đăng ký lắng nghe dữ liệu từ Topic điều khiển để sẵn sàng nhận và xử lý lệnh từ xa[cite: 2].
-* **Cập nhật và truyền dữ liệu cảm biến:** Định kỳ 2 giây/lần, hệ thống thu thập thông số mực nước từ cảm biến HC-SR04 và nhiệt độ từ cảm biến DS18B20[cite: 2]. Các dữ liệu này cùng với trạng thái hoạt động của thiết bị được đóng gói thành định dạng JSON và gửi lên Broker qua Topic `utc/iot_lab/de4/telemetry` để hiển thị trên Website và MQTTX[cite: 2].
-* **Nhận lệnh và điều khiển cơ cấu chấp hành:** Ở chế độ tự động, hệ thống tự căn cứ vào ngưỡng mực nước để điều khiển máy bơm và van thoát theo kịch bản lập trình sẵn[cite: 2]. Khi nhận được lệnh từ Website hoặc MQTTX qua Topic `utc/iot_lab/de4/control`, ESP32 sẽ phân tích lệnh để chuyển đổi chế độ hoạt động (Tự động/Thủ công), điều chỉnh công suất máy bơm (bật 50%, 100% hoặc tắt) và đóng/mở van thoát nước[cite: 2].
-* **Đồng bộ trạng thái sau điều khiển:** Ngay sau khi nhận và thực thi lệnh điều khiển, ESP32 kiểm tra kết nối MQTT rồi tổng hợp lại thông tin cảm biến cùng trạng thái thiết bị mới nhất để gửi ngay lên Topic Telemetry[cite: 2]. Nhờ đó, giao diện Website và MQTTX luôn cập nhật chính xác trạng thái hiển thị theo thời gian thực[cite: 2].
+* **Thiết lập kết nối Wi-Fi và MQTT:** ESP32 kết nối Internet qua mạng Wi-Fi `Wokwi-GUEST` và thiết lập giao tiếp với máy chủ MQTT Broker tại địa chỉ `broker.emqx.io` (cổng `1883`). Sau khi kết nối thành công, thiết bị đăng ký lắng nghe dữ liệu từ Topic điều khiển để sẵn sàng nhận và xử lý lệnh từ xa
+* **Cập nhật và truyền dữ liệu cảm biến:** Định kỳ 2 giây/lần, hệ thống thu thập thông số mực nước từ cảm biến HC-SR04 và nhiệt độ từ cảm biến DS18B20 Các dữ liệu này cùng với trạng thái hoạt động của thiết bị được đóng gói thành định dạng JSON và gửi lên Broker qua Topic `utc/iot_lab/de4/telemetry` để hiển thị trên Website và MQTTX
+* **Nhận lệnh và điều khiển cơ cấu chấp hành:** Ở chế độ tự động, hệ thống tự căn cứ vào ngưỡng mực nước để điều khiển máy bơm và van thoát theo kịch bản lập trình sẵn. Khi nhận được lệnh từ Website hoặc MQTTX qua Topic `utc/iot_lab/de4/control`, ESP32 sẽ phân tích lệnh để chuyển đổi chế độ hoạt động (Tự động/Thủ công), điều chỉnh công suất máy bơm (bật 50%, 100% hoặc tắt) và đóng/mở van thoát nước
+* **Đồng bộ trạng thái sau điều khiển:** Ngay sau khi nhận và thực thi lệnh điều khiển, ESP32 kiểm tra kết nối MQTT rồi tổng hợp lại thông tin cảm biến cùng trạng thái thiết bị mới nhất để gửi ngay lên Topic Telemetry. Nhờ đó, giao diện Website và MQTTX luôn cập nhật chính xác trạng thái hiển thị theo thời gian thực.
 
 ---
 
-## 7. Kết quả đạt được sau khi mô phỏng[cite: 2]
+## 7. Kết quả đạt được sau khi mô phỏng
 
-### TH1: Mực nước 1m - 1.5m bật 50% công suất máy bơm, trong 10s[cite: 2]
-![TH1 - Mô phỏng Wokwi](images/th1_wokwi.png)
-![TH1 - Giao diện Website](images/th1_web.png)
+### TH1: Mực nước 1m - 1.5m bật 50% công suất máy bơm, trong 10s
+[TH1 - Mô phỏng Wokwi]
 
-### TH2: Mực nước 1.5m - 2m bật 100% công suất máy bơm, trong 20s[cite: 2]
-![TH2 - Mô phỏng Wokwi](images/th2_wokwi.png)
-![TH2 - Giao diện Website](images/th2_web.png)
 
-### TH3: Mực nước < 0.5m bật Van thoát, trong 10s[cite: 2]
-![TH3 - Mô phỏng Wokwi](images/th3_wokwi.png)
-![TH3 - Giao diện Website](images/th3_web.png)
+<p align="center">
+ <img width="980" height="427" alt="image" src="https://github.com/user-attachments/assets/3ac48c9e-3c51-4cac-b09f-7ffd3f15b181" />
 
-### TH4: Khi chuyển sang chế độ thủ công, yêu cầu đóng máy bơm với mức nước 1.5m - 2m và mở van thoát (chấp hành ngược lại với chế độ Tự động ở TH2)[cite: 2]
-![TH4 - Giao diện Website](images/th4_web.png)
-![TH4 - Mô phỏng Wokwi](images/th4_wokwi.png)
+[TH1 - Giao diện Website]
+
+
+<p align="center">
+<img width="976" height="486" alt="image" src="https://github.com/user-attachments/assets/872a78b1-f856-4883-a53e-0268c293df18" />
+
+
+### TH2: Mực nước 1.5m - 2m bật 100% công suất máy bơm, trong 20s
+[TH2 - Mô phỏng Wokwi]
+
+
+<p align="center">
+ <img width="980" height="503" alt="image" src="https://github.com/user-attachments/assets/9cbe6b9c-577b-41d8-8ce7-f1cd0620650f" />
+
+[TH2 - Giao diện Website]
+
+
+<p align="center">
+<img width="980" height="526" alt="image" src="https://github.com/user-attachments/assets/df0c60ec-6d68-4b4c-ba93-42e17a5618e0" />
+
+
+### TH3: Mực nước < 0.5m bật Van thoát, trong 10s
+[TH3 - Mô phỏng Wokwi]
+
+
+<p align="center">
+ <img width="980" height="502" alt="image" src="https://github.com/user-attachments/assets/1bd8f161-509c-41ac-bf8a-37048e53a6ae" />
+
+[TH3 - Giao diện Website]
+
+
+<p align="center">
+<img width="980" height="525" alt="image" src="https://github.com/user-attachments/assets/24b3b9f7-472d-4ec9-b212-d92f95930e71" />
+
+
+### TH4: Khi chuyển sang chế độ thủ công, yêu cầu đóng máy bơm với mức nước 1.5m - 2m và mở van thoát (chấp hành ngược lại với chế độ Tự động ở TH2)
+[TH4 - Giao diện Website]
+
+
+<p align="center">
+ <img width="980" height="531" alt="image" src="https://github.com/user-attachments/assets/5f39c558-6391-40f9-938c-09bf45ad4162" />
+
+[TH4 - Mô phỏng Wokwi]
+
+
+<p align="center">
+<img width="980" height="498" alt="image" src="https://github.com/user-attachments/assets/a567304b-7127-4ec6-8709-0b037d849965" />
+
