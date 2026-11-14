@@ -68,7 +68,6 @@ Trong đó $H$ là khoảng cách từ vị trí đặt cảm biến đến đá
 
 ## 2. Sơ đồ kết nối mạch trên Wokwi
 
-[Sơ đồ kết nối mạch trên Wokwi]
 
 <p align="center">
 <img width="980" height="625" alt="image" src="https://github.com/user-attachments/assets/7e1f4da3-fbd4-48be-865a-cd7c090674d9" />
