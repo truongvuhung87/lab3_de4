@@ -16,16 +16,16 @@ Link MQTT Broker:
 https://mqttx.app/web-client#/recent_connections/a6d055d7-3c46-41b2-b0f0-837b71de7732
 
 
-# Thiết kế Mạch tự động Giám sát thông số môi trường cho bể nuôi thủy, hải sản[cite: 2]
+# THIẾT KẾ MẠCH TỰ ĐỘNG GIÁM SÁT THÔNG SỐ MÔI TRƯỜNG CHO BỂ NUÔI THỦY, HẢI SẢN.
 
-* **Họ và tên:** Vũ Hùng Trường[cite: 2]
-* **Mã sinh viên:** 231402381[cite: 2]
+* **Họ và tên:** Vũ Hùng Trường
+* **Mã sinh viên:** 231402381
 
 ---
 
-## 1. Mục tiêu bài thực hành và Các cảm biến chính sử dụng[cite: 2]
+## 1. Mục tiêu bài thực hành và Các cảm biến chính sử dụng
 
-### 1.1. Mục tiêu bài thực hành[cite: 2]
+### 1.1. Mục tiêu bài thực hành
 Xây dựng và mô phỏng hoàn chỉnh hệ thống nhúng IoT tự động giám sát thông số môi trường (mực nước, nhiệt độ) và điều khiển cơ cấu chấp hành cho bể nuôi thủy, hải sản theo thời gian thực[cite: 2]. Hệ thống ứng dụng vi điều khiển lõi kép ESP32 kết hợp hệ điều hành thời gian thực FreeRTOS và giao thức truyền thông MQTT nhằm đảm bảo tính ổn định, độ trễ thấp, xử lý đa nhiệm mượt mà và hỗ trợ người dùng giám sát, điều khiển từ xa qua giao diện Web/App[cite: 2].
 
 ### 1.2. Các cảm biến chính sử dụng[cite: 2]
