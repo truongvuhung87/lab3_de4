@@ -151,54 +151,80 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 
 ---
 
-## 4. Thiết kế giao thức MQTT[cite: 2]
+## 4. Thiết kế giao thức MQTT
 
-### Thông số kết nối MQTT[cite: 2]
+### Thông số kết nối MQTT
 
 | Thông số | Giá trị |
 | :--- | :--- |
-| **MQTT Broker** | `broker.emqx.io`[cite: 2] |
-| **Giao thức ESP32** | MQTT over TCP[cite: 2] |
-| **Cổng ESP32** | `1883`[cite: 2] |
-| **Giao thức website** | MQTT over WebSocket Secure[cite: 2] |
-| **Cổng website** | `8084`[cite: 2] |
-| **Đường dẫn WebSocket** | `/mqtt`[cite: 2] |
-| **URL website sử dụng** | `wss://broker.emqx.io:8084/mqtt`[cite: 2] |
+| **MQTT Broker** | `broker.emqx.io` |
+| **Giao thức ESP32** | MQTT over TCP |
+| **Cổng ESP32** | `1883` |
+| **Giao thức website** | MQTT over WebSocket Secure |
+| **Cổng website** | `8084` |
+| **Đường dẫn WebSocket** | `/mqtt` |
+| **URL website sử dụng** | `wss://broker.emqx.io:8084/mqtt` |
 
-### Bảng Topic dữ liệu đi và đến[cite: 2]
+### Bảng Topic dữ liệu đi và đến
 
 | Topic | Chiều truyền | Nội dung |
 | :--- | :--- | :--- |
-| `utc/iot_lab/de4/telemetry` | ESP32 $\rightarrow$ Broker $\rightarrow$ Website/MQTTX | Gửi dữ liệu cảm biến và trạng thái hệ thống, bao gồm: mực nước (m), nhiệt độ ($^\circ\text{C}$), trạng thái máy bơm (`ĐÓNG`, `50%`, `100%`), trạng thái van thoát (`MỞ`/`ĐÓNG`) và chế độ hoạt động (`TỰ ĐỘNG`/`THỦ CÔNG`)[cite: 2]. |
-| `utc/iot_lab/de4/control` | Website/MQTTX $\rightarrow$ Broker $\rightarrow$ ESP32 | Nhận các lệnh điều khiển từ Website hoặc MQTTX để thay đổi chế độ hoạt động, điều khiển công suất máy bơm và đóng/mở van thoát[cite: 2]. |
+| `utc/iot_lab/de4/telemetry` | ESP32 $\rightarrow$ Broker $\rightarrow$ Website/MQTTX | Gửi dữ liệu cảm biến và trạng thái hệ thống, bao gồm: mực nước (m), nhiệt độ ($^\circ\text{C}$), trạng thái máy bơm (`ĐÓNG`, `50%`, `100%`), trạng thái van thoát (`MỞ`/`ĐÓNG`) và chế độ hoạt động (`TỰ ĐỘNG`/`THỦ CÔNG`) |
+| `utc/iot_lab/de4/control` | Website/MQTTX $\rightarrow$ Broker $\rightarrow$ ESP32 | Nhận các lệnh điều khiển từ Website hoặc MQTTX để thay đổi chế độ hoạt động, điều khiển công suất máy bơm và đóng/mở van thoát |
 
-### Các lệnh điều khiển sử dụng trên Topic `utc/iot_lab/de4/control`[cite: 2]
+### Các lệnh điều khiển sử dụng trên Topic `utc/iot_lab/de4/control`
 
 | Lệnh MQTT | Chức năng |
 | :--- | :--- |
-| `MODE_AUTO` | Chuyển hệ thống sang chế độ tự động[cite: 2]. |
-| `MODE_MANUAL` | Chuyển hệ thống sang chế độ thủ công[cite: 2]. |
-| `PUMP_50` | Bật máy bơm ở mức công suất 50%[cite: 2]. |
-| `PUMP_ON` | Bật máy bơm ở mức công suất 100%[cite: 2]. |
-| `PUMP_OFF` | Tắt máy bơm[cite: 2]. |
-| `VALVE_ON` | Mở van thoát nước[cite: 2]. |
-| `VALVE_OFF` | Đóng van thoát nước[cite: 2]. |
+| `MODE_AUTO` | Chuyển hệ thống sang chế độ tự động |
+| `MODE_MANUAL` | Chuyển hệ thống sang chế độ thủ công |
+| `PUMP_50` | Bật máy bơm ở mức công suất 50% |
+| `PUMP_ON` | Bật máy bơm ở mức công suất 100% |
+| `PUMP_OFF` | Tắt máy bơm |
+| `VALVE_ON` | Mở van thoát nước |
+| `VALVE_OFF` | Đóng van thoát nước |
 
-### Kiểm thử kết nối và truyền nhận dữ liệu trên MQTTX[cite: 2]
+### Kiểm thử kết nối và truyền nhận dữ liệu trên MQTTX
 
-* **Giao diện kết nối:**[cite: 2]
-![Giao diện kết nối MQTTX](images/mqttx_connection.png)
+* **Giao diện kết nối:**
+![Giao diện kết nối MQTTX]
 
-* **Khi nạp code vào mạch mô phỏng thì có kết quả và gửi dữ liệu kết quả cho MQTTX:**[cite: 2]
-![Mô phỏng Wokwi gửi dữ liệu MQTT](images/wokwi_mqtt_telemetry.png)
 
-* **Dữ liệu nhận được từ topic `utc/iot_lab/de4/telemetry` trên MQTTX:**[cite: 2]
-![Dữ liệu nhận được trên MQTTX](images/mqttx_telemetry_received.png)
+<p align="center">
+<img width="980" height="501" alt="image" src="https://github.com/user-attachments/assets/f87dc0fb-387f-4cf1-9243-e0a47e7fb9d6" />
 
-* **Điều khiển PUMP/VALVE thông qua topic `utc/iot_lab/de4/control` từ MQTTX:**[cite: 2]
-  * *Khi điều khiển bật máy bơm từ MQTTX:*[cite: 2]
-  ![Lệnh PUMP_ON trên MQTTX](images/mqttx_pump_on_cmd.png)
-  ![Kết quả bật máy bơm trên Wokwi](images/wokwi_pump_on_result.png)
+
+* **Khi nạp code vào mạch mô phỏng thì có kết quả và gửi dữ liệu kết quả cho MQTTX:**
+![Mô phỏng Wokwi gửi dữ liệu MQTT]
+
+
+<p align="center">
+<img width="980" height="482" alt="image" src="https://github.com/user-attachments/assets/edcf1990-230f-4fe0-ad2a-fa550fe588fd" />
+
+
+* **Dữ liệu nhận được từ topic `utc/iot_lab/de4/telemetry` trên MQTTX:**
+![Dữ liệu nhận được trên MQTTX]
+
+
+<p align="center">
+<img width="980" height="419" alt="image" src="https://github.com/user-attachments/assets/ecb7fa8d-d87b-42ec-b20d-38391da91327" />
+
+
+* **Điều khiển PUMP/VALVE thông qua topic `utc/iot_lab/de4/control` từ MQTTX:**
+  * *Khi điều khiển bật máy bơm từ MQTTX:*
+  ![Lệnh PUMP_ON trên MQTTX]
+
+
+<p align="center">
+ <img width="856" height="202" alt="image" src="https://github.com/user-attachments/assets/f9cd2626-9c41-4ef5-a3d7-c52601e7e481" />
+
+
+  ![Kết quả bật máy bơm trên Wokwi]
+
+
+  <p align="center">
+  <img width="912" height="878" alt="image" src="https://github.com/user-attachments/assets/86572dde-f58e-4562-aa9d-fccee02992fa" />
+
 
   * *Khi bật van xả từ MQTTX:*[cite: 2]
   ![Lệnh VALVE_ON trên MQTTX](images/mqttx_valve_on_cmd.png)
