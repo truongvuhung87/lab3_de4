@@ -36,6 +36,7 @@ Xây dựng và mô phỏng hoàn chỉnh hệ thống nhúng IoT tự động g
 
 <p align="center">
 <img src="https://github.com/user-attachments/assets/c3b81e72-db5e-40c9-b696-71edf2c716e7" />
+</p>
 
 
 * HC-SR04 là cảm biến đo khoảng cách bằng sóng siêu âm. Trong mô hình, cảm biến được giả định đặt phía trên bể và hướng xuống mặt nước, cho phép đo mà không cần tiếp xúc trực tiếp với nước.
