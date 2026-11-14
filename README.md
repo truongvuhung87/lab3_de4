@@ -26,29 +26,32 @@ https://mqttx.app/web-client#/recent_connections/a6d055d7-3c46-41b2-b0f0-837b71d
 ## 1. Mục tiêu bài thực hành và Các cảm biến chính sử dụng
 
 ### 1.1. Mục tiêu bài thực hành
-Xây dựng và mô phỏng hoàn chỉnh hệ thống nhúng IoT tự động giám sát thông số môi trường (mực nước, nhiệt độ) và điều khiển cơ cấu chấp hành cho bể nuôi thủy, hải sản theo thời gian thực[cite: 2]. Hệ thống ứng dụng vi điều khiển lõi kép ESP32 kết hợp hệ điều hành thời gian thực FreeRTOS và giao thức truyền thông MQTT nhằm đảm bảo tính ổn định, độ trễ thấp, xử lý đa nhiệm mượt mà và hỗ trợ người dùng giám sát, điều khiển từ xa qua giao diện Web/App[cite: 2].
+Xây dựng và mô phỏng hoàn chỉnh hệ thống nhúng IoT tự động giám sát thông số môi trường (mực nước, nhiệt độ) và điều khiển cơ cấu chấp hành cho bể nuôi thủy, hải sản theo thời gian thực. Hệ thống ứng dụng vi điều khiển lõi kép ESP32 kết hợp hệ điều hành thời gian thực FreeRTOS và giao thức truyền thông MQTT nhằm đảm bảo tính ổn định, độ trễ thấp, xử lý đa nhiệm mượt mà và hỗ trợ người dùng giám sát, điều khiển từ xa qua giao diện Web/App.
 
-### 1.2. Các cảm biến chính sử dụng[cite: 2]
+### 1.2. Các cảm biến chính sử dụng.
 
 #### a) Cảm biến siêu âm HC-SR04[cite: 2]
-![Cảm biến siêu âm HC-SR04](images/hc-sr04.png)
+![Cảm biến siêu âm HC-SR04]
 
-* HC-SR04 là cảm biến đo khoảng cách bằng sóng siêu âm[cite: 2]. Trong mô hình, cảm biến được giả định đặt phía trên bể và hướng xuống mặt nước, cho phép đo mà không cần tiếp xúc trực tiếp với nước[cite: 2].
-* ESP32 phát một xung kích hoạt đến chân `TRIG`[cite: 2]. Cảm biến phát sóng siêu âm và đưa ra xung tại chân `ECHO` có độ rộng tương ứng với thời gian sóng truyền đến bề mặt rồi phản xạ trở lại[cite: 2].
-* Trong Wokwi, khoảng cách mô phỏng của HC-SR04 có thể điều chỉnh từ 2 đến 400 cm[cite: 2]. Đơn vị khoảng cách sử dụng trong bài là centimet (cm)[cite: 2].
-* Khoảng cách được tính gần đúng[cite: 2]:
+<img width="331" height="245" alt="image" src="https://github.com/user-attachments/assets/c3b81e72-db5e-40c9-b696-71edf2c716e7" />
+
+
+* HC-SR04 là cảm biến đo khoảng cách bằng sóng siêu âm. Trong mô hình, cảm biến được giả định đặt phía trên bể và hướng xuống mặt nước, cho phép đo mà không cần tiếp xúc trực tiếp với nước.
+* ESP32 phát một xung kích hoạt đến chân `TRIG`. Cảm biến phát sóng siêu âm và đưa ra xung tại chân `ECHO` có độ rộng tương ứng với thời gian sóng truyền đến bề mặt rồi phản xạ trở lại.
+* Trong Wokwi, khoảng cách mô phỏng của HC-SR04 có thể điều chỉnh từ 2 đến 400 cm. Đơn vị khoảng cách sử dụng trong bài là centimet (cm).
+* Khoảng cách được tính gần đúng:
 
 $$d = \frac{t}{58}$$
 
-Trong đó[cite: 2]:
-* $d$: Khoảng cách từ cảm biến đến mặt nước, đơn vị cm[cite: 2].
-* $t$: Độ rộng xung `ECHO`, đơn vị micro giây ($\mu\text{s}$)[cite: 2].
+Trong đó:
+* $d$: Khoảng cách từ cảm biến đến mặt nước, đơn vị cm.
+* $t$: Độ rộng xung `ECHO`, đơn vị micro giây ($\mu\text{s}$).
 
-* Chiều cao mực nước được xác định theo công thức[cite: 2]:
+* Chiều cao mực nước được xác định theo công thức:
 
 $$h = H - d$$
 
-Trong đó $H$ là khoảng cách từ vị trí đặt cảm biến đến đáy bể[cite: 2].
+Trong đó $H$ là khoảng cách từ vị trí đặt cảm biến đến đáy bể.
 
 #### b) Cảm biến nhiệt độ DS18B20[cite: 2]
 ![Cảm biến nhiệt độ DS18B20](images/ds18b20.png)
