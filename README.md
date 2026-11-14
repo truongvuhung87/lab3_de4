@@ -59,7 +59,8 @@ Trong đó $H$ là khoảng cách từ vị trí đặt cảm biến đến đá
 #### b) Cảm biến nhiệt độ DS18B20
 
 <p align="center">
-<img width="272" height="325" alt="image" src="https://github.com/user-attachments/assets/ff85d7e1-faa9-47f2-99ee-f0ecb44c9bb2" />
+<img src="https://github.com/user-attachments/assets/ff85d7e1-faa9-47f2-99ee-f0ecb44c9bb2" />
+</p>
 
 
 * DS18B20 là cảm biến nhiệt độ số sử dụng giao tiếp 1-Wire, cho phép truyền dữ liệu qua một đường tín hiệu.
@@ -71,7 +72,8 @@ Trong đó $H$ là khoảng cách từ vị trí đặt cảm biến đến đá
 
 
 <p align="center">
-<img width="980" height="625" alt="image" src="https://github.com/user-attachments/assets/7e1f4da3-fbd4-48be-865a-cd7c090674d9" />
+<img src="https://github.com/user-attachments/assets/7e1f4da3-fbd4-48be-865a-cd7c090674d9" />
+</p>
 
 
 **Bảng kết nối chân:**
@@ -146,7 +148,8 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 
 
 <p align="center">
-<img width="868" height="764" alt="image" src="https://github.com/user-attachments/assets/40da968f-6b02-4c7a-a0c6-c01649ec0a50" />
+<img src="https://github.com/user-attachments/assets/40da968f-6b02-4c7a-a0c6-c01649ec0a50" />
+</p>
 
 
 ---
@@ -189,20 +192,23 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 * **Giao diện kết nối:**
 
 <p align="center">
-<img width="980" height="501" alt="image" src="https://github.com/user-attachments/assets/f87dc0fb-387f-4cf1-9243-e0a47e7fb9d6" />
+<img src="https://github.com/user-attachments/assets/f87dc0fb-387f-4cf1-9243-e0a47e7fb9d6" />
+</p>
 
 
 * **Khi nạp code vào mạch mô phỏng thì có kết quả và gửi dữ liệu kết quả cho MQTTX:**
 
 
 <p align="center">
-<img width="980" height="482" alt="image" src="https://github.com/user-attachments/assets/edcf1990-230f-4fe0-ad2a-fa550fe588fd" />
+<img src="https://github.com/user-attachments/assets/edcf1990-230f-4fe0-ad2a-fa550fe588fd" />
+</p>
 
 
 * **Dữ liệu nhận được từ topic `utc/iot_lab/de4/telemetry` trên MQTTX:**
 
 <p align="center">
-<img width="980" height="419" alt="image" src="https://github.com/user-attachments/assets/ecb7fa8d-d87b-42ec-b20d-38391da91327" />
+<img src="https://github.com/user-attachments/assets/ecb7fa8d-d87b-42ec-b20d-38391da91327" />
+</p>
 
 
 * **Điều khiển PUMP/VALVE thông qua topic `utc/iot_lab/de4/control` từ MQTTX:**
@@ -210,27 +216,31 @@ Hệ thống sử dụng 2 hàng đợi (Queue) hoạt động theo cơ chế FI
 
 
 <p align="center">
- <img width="856" height="202" alt="image" src="https://github.com/user-attachments/assets/f9cd2626-9c41-4ef5-a3d7-c52601e7e481" />
+ <img src="https://github.com/user-attachments/assets/f9cd2626-9c41-4ef5-a3d7-c52601e7e481" />
+ </p>
 
 
   [Kết quả bật máy bơm trên Wokwi]
 
 
   <p align="center">
-  <img width="912" height="878" alt="image" src="https://github.com/user-attachments/assets/86572dde-f58e-4562-aa9d-fccee02992fa" />
+  <img src="https://github.com/user-attachments/assets/86572dde-f58e-4562-aa9d-fccee02992fa" />
+  </p>
 
 
   * *Khi bật van xả từ MQTTX:*
 
 
 <p align="center">
- <img width="866" height="169" alt="image" src="https://github.com/user-attachments/assets/9f5bc0b3-c596-4010-974f-5d4ed70c58f9" />
+ <img src="https://github.com/user-attachments/assets/9f5bc0b3-c596-4010-974f-5d4ed70c58f9" />
+ </p>
 
   [Kết quả mở van xả trên Wokwi]
 
 
   <p align="center">
-  <img width="912" height="907" alt="image" src="https://github.com/user-attachments/assets/40009091-c265-4bda-aeff-872f42ca74a8" />
+  <img src="https://github.com/user-attachments/assets/40009091-c265-4bda-aeff-872f42ca74a8" />
+  </p>
 
 
 ---
@@ -258,12 +268,14 @@ Website được xây dựng bằng HTML, CSS và JavaScript nhằm giám sát, 
 
 
 <p align="center">
- <img width="980" height="531" alt="image" src="https://github.com/user-attachments/assets/f3ce6919-2c3c-40be-86eb-45c610f837f9" />
+ <img src="https://github.com/user-attachments/assets/f3ce6919-2c3c-40be-86eb-45c610f837f9" />
+ </p>
 
 
 
 <p align="center">
-<img width="980" height="533" alt="image" src="https://github.com/user-attachments/assets/b6a51bf1-afe0-4181-b4a9-a8a181a33cb9" />
+<img src="https://github.com/user-attachments/assets/b6a51bf1-afe0-4181-b4a9-a8a181a33cb9" />
+</p>
 
 
 ---
@@ -283,45 +295,53 @@ Website được xây dựng bằng HTML, CSS và JavaScript nhằm giám sát, 
 
 
 <p align="center">
- <img width="980" height="427" alt="image" src="https://github.com/user-attachments/assets/3ac48c9e-3c51-4cac-b09f-7ffd3f15b181" />
+ <img src="https://github.com/user-attachments/assets/3ac48c9e-3c51-4cac-b09f-7ffd3f15b181" />
+ </p>
 
 
 
 <p align="center">
-<img width="976" height="486" alt="image" src="https://github.com/user-attachments/assets/872a78b1-f856-4883-a53e-0268c293df18" />
+<img src="https://github.com/user-attachments/assets/872a78b1-f856-4883-a53e-0268c293df18" />
+</p>
 
 
 ### TH2: Mực nước 1.5m - 2m bật 100% công suất máy bơm, trong 20s
 
 
 <p align="center">
- <img width="980" height="503" alt="image" src="https://github.com/user-attachments/assets/9cbe6b9c-577b-41d8-8ce7-f1cd0620650f" />
+ <img src="https://github.com/user-attachments/assets/9cbe6b9c-577b-41d8-8ce7-f1cd0620650f" />
+ </p>
 
 
 <p align="center">
-<img width="980" height="526" alt="image" src="https://github.com/user-attachments/assets/df0c60ec-6d68-4b4c-ba93-42e17a5618e0" />
+<img src="https://github.com/user-attachments/assets/df0c60ec-6d68-4b4c-ba93-42e17a5618e0" />
+</p>
 
 
 ### TH3: Mực nước < 0.5m bật Van thoát, trong 10s
 
 
 <p align="center">
- <img width="980" height="502" alt="image" src="https://github.com/user-attachments/assets/1bd8f161-509c-41ac-bf8a-37048e53a6ae" />
+ <img src="https://github.com/user-attachments/assets/1bd8f161-509c-41ac-bf8a-37048e53a6ae" />
+ </p>
 
 
 
 <p align="center">
-<img width="980" height="525" alt="image" src="https://github.com/user-attachments/assets/24b3b9f7-472d-4ec9-b212-d92f95930e71" />
+<img src="https://github.com/user-attachments/assets/24b3b9f7-472d-4ec9-b212-d92f95930e71" />
+</p>
 
 
 ### TH4: Khi chuyển sang chế độ thủ công, yêu cầu đóng máy bơm với mức nước 1.5m - 2m và mở van thoát (chấp hành ngược lại với chế độ Tự động ở TH2)
 
 
 <p align="center">
- <img width="980" height="531" alt="image" src="https://github.com/user-attachments/assets/5f39c558-6391-40f9-938c-09bf45ad4162" />
+ <img src="https://github.com/user-attachments/assets/5f39c558-6391-40f9-938c-09bf45ad4162" />
+ </p>
 
 
 
 <p align="center">
-<img width="980" height="498" alt="image" src="https://github.com/user-attachments/assets/a567304b-7127-4ec6-8709-0b037d849965" />
+<img src="https://github.com/user-attachments/assets/a567304b-7127-4ec6-8709-0b037d849965" />
+</p>
 
