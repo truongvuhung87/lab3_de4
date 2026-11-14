@@ -32,7 +32,7 @@ Xây dựng và mô phỏng hoàn chỉnh hệ thống nhúng IoT tự động g
 
 ### 1.2. Các cảm biến chính sử dụng.
 
-#### a) Cảm biến siêu âm HC-SR04[cite: 2]
+#### a) Cảm biến siêu âm HC-SR04
 [Cảm biến siêu âm HC-SR04]
 
 <p align="center">
